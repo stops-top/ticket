@@ -8,9 +8,9 @@
 
 ## [资源](qitas/) 
 
-#### [firmware](firmware/) 
+#### [工程源码](src/) 
 
-相关源码
+相关工程源码
 
 #### [工程文件](project/) 
 
