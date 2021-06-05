@@ -1,0 +1,19 @@
+{
+  "name": "NEAR TestNet",
+  "chain": "NEAR",
+  "network": "testnet",
+  "rpc": [
+  ],
+  "faucets": [
+    "https://wallet.testnet.near.org"
+  ],
+  "nativeCurrency": {
+    "name": "NEAR",
+    "symbol": "tNEAR",
+    "decimals": 24
+  },
+  "infoURL": "https://near.org/",
+  "shortName": "neart",
+  "chainId": 1313161555,
+  "networkId": 1313161555
+}

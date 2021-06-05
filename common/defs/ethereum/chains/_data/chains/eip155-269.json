@@ -1,0 +1,19 @@
+{
+  "name": "High Performance Blockchain",
+  "chain": "HPB",
+  "network": "mainnet",
+  "rpc": [
+    "https://node.hpb.blue"
+  ],
+  "faucets": [],
+  "nativeCurrency": {
+    "name": "High Performance Blockchain Ether",
+    "symbol": "HPB",
+    "decimals": 18
+  },
+  "infoURL": "https://hpb.io",
+  "shortName": "hpb",
+  "chainId": 269,
+  "networkId": 100,
+  "slip44": 269
+}

@@ -1,0 +1,20 @@
+{
+  "name": "Ubiq Network Mainnet",
+  "chain": "UBQ",
+  "network": "mainnet",
+  "rpc": [
+    "https://rpc.octano.dev",
+    "https://pyrus2.ubiqscan.io"
+  ],
+  "faucets": [],
+  "nativeCurrency": {
+    "name": "Ubiq Ether",
+    "symbol": "UBQ",
+    "decimals": 18
+  },
+  "infoURL": "https://ubiqsmart.com",
+  "shortName": "ubq",
+  "chainId": 8,
+  "networkId": 88,
+  "slip44": 108
+}
