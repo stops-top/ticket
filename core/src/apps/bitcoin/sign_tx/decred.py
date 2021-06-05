@@ -24,13 +24,12 @@ OUTPUT_SCRIPT_NULL_SSTXCHANGE = (
 )
 
 if False:
-    from typing import Optional, Union, List
-
+    from trezor.messages.PrevInput import PrevInput
+    from trezor.messages.PrevTx import PrevTx
     from trezor.messages.SignTx import SignTx
     from trezor.messages.TxInput import TxInput
     from trezor.messages.TxOutput import TxOutput
-    from trezor.messages.PrevTx import PrevTx
-    from trezor.messages.PrevInput import PrevInput
+    from typing import List, Optional, Union
 
     from apps.common.coininfo import CoinInfo
     from apps.common.keychain import Keychain

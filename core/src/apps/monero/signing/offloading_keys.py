@@ -5,13 +5,14 @@ from trezor import utils
 from apps.monero.xmr import crypto
 
 if False:
-    from apps.monero.xmr.types import Sc25519
-    from trezor.messages.MoneroTransactionSourceEntry import (
-        MoneroTransactionSourceEntry,
-    )
     from trezor.messages.MoneroTransactionDestinationEntry import (
         MoneroTransactionDestinationEntry,
     )
+    from trezor.messages.MoneroTransactionSourceEntry import (
+        MoneroTransactionSourceEntry,
+    )
+
+    from apps.monero.xmr.types import Sc25519
 
 
 _SECRET_LENGTH = const(32)
@@ -135,6 +136,7 @@ def gen_hmac_vini(
     are uncheckable, decoy keys in step 9 are just random keys.
     """
     import protobuf
+
     from apps.monero.xmr.keccak_hasher import get_keccak_writer
 
     kwriter = get_keccak_writer()
@@ -163,6 +165,7 @@ def gen_hmac_vouti(
     Generates HMAC for (TxDestinationEntry[i] || tx.vout[i])
     """
     import protobuf
+
     from apps.monero.xmr.keccak_hasher import get_keccak_writer
 
     kwriter = get_keccak_writer()
@@ -181,6 +184,7 @@ def gen_hmac_tsxdest(
     Generates HMAC for TxDestinationEntry[i]
     """
     import protobuf
+
     from apps.monero.xmr.keccak_hasher import get_keccak_writer
 
     kwriter = get_keccak_writer()

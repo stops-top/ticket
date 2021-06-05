@@ -16,13 +16,12 @@ from apps.common.writers import (  # noqa: F401
 )
 
 if False:
-    from typing import Union
-
-    from trezor.messages.TxInput import TxInput
-    from trezor.messages.TxOutput import TxOutput
     from trezor.messages.PrevInput import PrevInput
     from trezor.messages.PrevOutput import PrevOutput
+    from trezor.messages.TxInput import TxInput
+    from trezor.messages.TxOutput import TxOutput
     from trezor.utils import HashWriter
+    from typing import Union
 
     from apps.common.writers import Writer
 

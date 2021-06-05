@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import click
+import coin_info
 import fnmatch
 import glob
 import io
@@ -9,13 +11,9 @@ import re
 import struct
 import sys
 import zlib
+from coindef import CoinDef
 from collections import defaultdict
 from hashlib import sha256
-
-import click
-
-import coin_info
-from coindef import CoinDef
 
 try:
     import termcolor
@@ -39,6 +37,7 @@ except ImportError:
 try:
     import ed25519
     from PIL import Image
+
     from trezorlib import protobuf
 
     CAN_BUILD_DEFS = True

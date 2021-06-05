@@ -15,10 +15,9 @@ from .scripts import (  # noqa: F401
 from .writers import write_op_push
 
 if False:
-    from typing import Optional
-
     from trezor.messages.MultisigRedeemScriptType import MultisigRedeemScriptType
     from trezor.messages.TxInput import EnumTypeInputScriptType
+    from typing import Optional
 
     from apps.common.coininfo import CoinInfo
 

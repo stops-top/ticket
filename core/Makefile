@@ -1,6 +1,6 @@
 .PHONY: vendor
 
-JOBS = 4
+JOBS = 8
 MAKE = make -j $(JOBS)
 SCONS = scons -Q -j $(JOBS)
 
@@ -23,10 +23,8 @@ BITCOIN_ONLY ?= 0
 TREZOR_MODEL ?= T
 TREZOR_MEMPERF ?= 0
 
-OPENOCD_INTERFACE ?= stlink   # -or- ftdi/olimex-arm-usb-tiny-h
-OPENOCD_TRANSPORT ?= hla_swd  # -or- jtag
-OPENOCD = openocd -f interface/$(OPENOCD_INTERFACE).cfg -c "transport select $(OPENOCD_TRANSPORT)" -f target/stm32f4x.cfg
-OPENOCD_T1 = openocd -f interface/$(OPENOCD_INTERFACE).cfg -c "transport select $(OPENOCD_TRANSPORT)" -f target/stm32f2x.cfg
+OPENOCD = openocd -f interface/stlink.cfg -c "transport select hla_swd" -f target/stm32f4x.cfg
+OPENOCD_T1 = openocd -f interface/stlink.cfg -c "transport select hla_swd" -f target/stm32f2x.cfg
 
 BOARDLOADER_START   = 0x08000000
 BOOTLOADER_START    = 0x08020000
@@ -160,7 +158,7 @@ build_cross: ## build mpy-cross port
 
 ## clean commands:
 
-clean: clean_boardloader clean_bootloader clean_bootloader_ci clean_prodtest clean_reflash clean_firmware clean_unix clean_cross ## clean all
+clean: clean_boardloader clean_bootloader clean_prodtest clean_firmware clean_unix clean_cross ## clean all
 	rm -f ".sconsign.dblite"
 
 clean_boardloader: ## clean boardloader build
@@ -168,9 +166,6 @@ clean_boardloader: ## clean boardloader build
 
 clean_bootloader: ## clean bootloader build
 	rm -rf $(BOOTLOADER_BUILD_DIR)
-
-clean_bootloader_ci: ## clean bootloader_ci build
-	rm -rf $(BOOTLOADER_CI_BUILD_DIR)
 
 clean_prodtest: ## clean prodtest build
 	rm -rf $(PRODTEST_BUILD_DIR)

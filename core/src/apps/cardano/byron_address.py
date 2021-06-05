@@ -8,6 +8,7 @@ from .helpers import INVALID_ADDRESS, NETWORK_MISMATCH, protocol_magics
 
 if False:
     from trezor.crypto import bip32
+
     from . import seed
 
 PROTOCOL_MAGIC_KEY = 2

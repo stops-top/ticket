@@ -4,8 +4,8 @@ if __debug__:
     from trezor import log
 
 if False:
-    from typing import Dict, Type  # noqa: F401
     from protobuf import MessageType as MessageType_  # noqa: F401
+    from typing import Dict, Type  # noqa: F401
 
     MessageClass = Type[MessageType_]
 

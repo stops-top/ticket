@@ -14,12 +14,11 @@
 # You should have received a copy of the License along with this library.
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
+import ecdsa
 import hashlib
 import hmac
 import struct
 from copy import copy
-
-import ecdsa
 from ecdsa.curves import SECP256k1
 from ecdsa.ellipticcurve import INFINITY, Point
 from ecdsa.util import number_to_string, string_to_number

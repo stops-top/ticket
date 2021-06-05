@@ -3,6 +3,7 @@ from apps.monero.xmr.keccak_hasher import KeccakXmrArchive
 
 if False:
     from typing import List, Union
+
     from apps.monero.xmr.serialize_messages.tx_rsig_bulletproof import Bulletproof
 
 

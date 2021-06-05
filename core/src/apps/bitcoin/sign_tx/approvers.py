@@ -11,10 +11,10 @@ from . import helpers, tx_weight
 from .tx_info import OriginalTxInfo, TxInfo
 
 if False:
-    from typing import List, Optional
     from trezor.messages.SignTx import SignTx
     from trezor.messages.TxInput import TxInput
     from trezor.messages.TxOutput import TxOutput
+    from typing import List, Optional
 
     from apps.common.coininfo import CoinInfo
 

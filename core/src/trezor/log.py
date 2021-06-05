@@ -1,6 +1,7 @@
-import sys
 import utime
 from micropython import const
+
+import sys
 
 if False:
     from typing import Any

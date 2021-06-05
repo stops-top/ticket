@@ -14,9 +14,8 @@
 # You should have received a copy of the License along with this library.
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from unittest import mock
-
 import pytest
+from unittest import mock
 
 from trezorlib import btc, device, messages
 from trezorlib.messages import BackupType, ButtonRequestType as B

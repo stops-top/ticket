@@ -12,9 +12,9 @@ from .multisig import multisig_get_pubkeys, multisig_pubkey_index
 from .scripts import output_script_multisig, output_script_native_p2wpkh_or_p2wsh
 
 if False:
-    from typing import List
     from trezor.crypto import bip32
     from trezor.messages.TxInputType import EnumTypeInputScriptType
+    from typing import List
 
 
 def get_address(

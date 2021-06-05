@@ -14,9 +14,8 @@
 # You should have received a copy of the License along with this library.
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from hashlib import sha256
-
 import pytest
+from hashlib import sha256
 
 from trezorlib import cosi
 from trezorlib.tools import parse_path

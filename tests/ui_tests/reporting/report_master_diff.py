@@ -1,10 +1,9 @@
+import dominate
 import shutil
 import tempfile
 from contextlib import contextmanager
-from pathlib import Path
-
-import dominate
 from dominate.tags import br, h1, h2, hr, i, p, table, td, th, tr
+from pathlib import Path
 
 # These are imported directly because this script is run directly, isort gets confused by that.
 import download  # isort:skip

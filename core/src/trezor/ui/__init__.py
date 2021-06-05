@@ -1,8 +1,8 @@
-import math
 import utime
 from micropython import const
 from trezorui import Display
 
+import math
 from trezor import io, loop, res, utils, workflow
 
 if __debug__:

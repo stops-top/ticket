@@ -5,11 +5,11 @@ from trezor.messages import MessageType
 from .common import BIP32_WALLET_DEPTH
 
 if False:
-    from typing import Iterable
     from trezor.messages.AuthorizeCoinJoin import AuthorizeCoinJoin
     from trezor.messages.GetOwnershipProof import GetOwnershipProof
     from trezor.messages.SignTx import SignTx
     from trezor.messages.TxInput import TxInput
+    from typing import Iterable
 
     from apps.common.coininfo import CoinInfo
     from apps.common.keychain import Keychain

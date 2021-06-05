@@ -4,8 +4,8 @@ from . import HomescreenBase
 
 
 async def lockscreen() -> None:
-    from apps.common.request_pin import can_lock_device
     from apps.base import unlock_device
+    from apps.common.request_pin import can_lock_device
 
     # Only show the lockscreen UI if the device can in fact be locked.
     if can_lock_device():

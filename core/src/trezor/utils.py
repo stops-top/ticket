@@ -1,5 +1,3 @@
-import gc
-import sys
 from trezorutils import (  # noqa: F401
     BITCOIN_ONLY,
     EMULATOR,
@@ -12,6 +10,9 @@ from trezorutils import (  # noqa: F401
     halt,
     memcpy,
 )
+
+import gc
+import sys
 
 DISABLE_ANIMATION = 0
 
@@ -31,9 +32,9 @@ if False:
         Iterator,
         Optional,
         Protocol,
-        Union,
-        TypeVar,
         Sequence,
+        TypeVar,
+        Union,
     )
 
 

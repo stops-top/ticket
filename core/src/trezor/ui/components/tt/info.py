@@ -7,6 +7,7 @@ from .text import render_text
 
 if False:
     from typing import Type
+
     from .button import ButtonContent
 
 

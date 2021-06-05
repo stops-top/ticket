@@ -23,6 +23,7 @@ class ConfirmInfo:
 
     def load_icon(self, rp_id_hash: bytes) -> None:
         from trezor import res
+
         from . import knownapps
 
         fido_app = knownapps.by_rp_id_hash(rp_id_hash)

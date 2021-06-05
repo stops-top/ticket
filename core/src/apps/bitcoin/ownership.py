@@ -15,9 +15,10 @@ from .scripts import read_bip322_signature_proof, write_bip322_signature_proof
 from .verification import SignatureVerifier
 
 if False:
-    from typing import List, Optional, Tuple
     from trezor.messages.MultisigRedeemScriptType import MultisigRedeemScriptType
     from trezor.messages.TxInputType import EnumTypeInputScriptType
+    from typing import List, Optional, Tuple
+
     from apps.common.coininfo import CoinInfo
 
 # This module implements the SLIP-0019 proof of ownership format, see

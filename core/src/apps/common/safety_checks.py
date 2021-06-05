@@ -5,8 +5,8 @@ from storage.device import SAFETY_CHECK_LEVEL_PROMPT, SAFETY_CHECK_LEVEL_STRICT
 from trezor.messages import SafetyCheckLevel
 
 if False:
-    from typing import Optional
     from trezor.messages.ApplySettings import EnumTypeSafetyCheckLevel
+    from typing import Optional
 
 
 def read_setting() -> EnumTypeSafetyCheckLevel:

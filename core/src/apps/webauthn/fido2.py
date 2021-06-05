@@ -587,9 +587,10 @@ class KeepaliveCallback:
 
 
 async def verify_user(keepalive_callback: KeepaliveCallback) -> bool:
-    from trezor.wire import PinCancelled, PinInvalid
-    from apps.common.request_pin import verify_user_pin
     import trezor.pin
+    from trezor.wire import PinCancelled, PinInvalid
+
+    from apps.common.request_pin import verify_user_pin
 
     try:
         trezor.pin.keepalive_callback = keepalive_callback
@@ -724,6 +725,7 @@ class U2fUnlock(State):
 
     async def confirm_dialog(self) -> bool:
         from trezor.wire import PinCancelled, PinInvalid
+
         from apps.common.request_pin import verify_user_pin
 
         try:

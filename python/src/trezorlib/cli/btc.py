@@ -211,7 +211,7 @@ def _get_descriptor(client, coin, account, script_type, show_display):
 
     if coin is None or coin == "Bitcoin":
         coin_type = 0
-    elif coin == "Testnet" or coin == "Regtest":
+    elif coin == "Testnet":
         coin_type = 1
     else:
         raise ValueError("Unsupported coin")

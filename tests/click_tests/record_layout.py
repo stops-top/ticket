@@ -6,13 +6,12 @@
 #
 # See docs/tests/click-tests.md for a brief instruction manual.
 
+import click
 import inspect
 import sys
 import threading
 import time
 from pathlib import Path
-
-import click
 
 from trezorlib import (
     binance,

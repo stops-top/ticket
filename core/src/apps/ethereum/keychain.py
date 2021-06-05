@@ -6,14 +6,12 @@ from apps.common.keychain import get_keychain
 from . import CURVE, networks
 
 if False:
+    from protobuf import MessageType
+    from trezor.messages.EthereumSignTx import EthereumSignTx
     from typing import Callable, Iterable
     from typing_extensions import Protocol
 
-    from protobuf import MessageType
-
-    from trezor.messages.EthereumSignTx import EthereumSignTx
-
-    from apps.common.keychain import MsgOut, Handler, HandlerWithKeychain
+    from apps.common.keychain import Handler, HandlerWithKeychain, MsgOut
 
     class MsgWithAddressN(MessageType, Protocol):
         address_n: paths.Bip32Path

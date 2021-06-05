@@ -19,15 +19,14 @@ from .hash143 import Bip143Hash
 from .tx_info import OriginalTxInfo, TxInfo
 
 if False:
-    from typing import List, Optional, Set, Tuple, Union
     from trezor.crypto import bip32
-
+    from trezor.messages.PrevInput import PrevInput
+    from trezor.messages.PrevOutput import PrevOutput
+    from trezor.messages.PrevTx import PrevTx
     from trezor.messages.SignTx import SignTx
     from trezor.messages.TxInput import TxInput
     from trezor.messages.TxOutput import TxOutput
-    from trezor.messages.PrevTx import PrevTx
-    from trezor.messages.PrevInput import PrevInput
-    from trezor.messages.PrevOutput import PrevOutput
+    from typing import List, Optional, Set, Tuple, Union
 
     from apps.common.coininfo import CoinInfo
     from apps.common.keychain import Keychain
@@ -650,7 +649,7 @@ class Bitcoin:
         return SIGHASH_ALL
 
     def get_hash_type(self, txi: TxInput) -> int:
-        """ Return the nHashType flags."""
+        """Return the nHashType flags."""
         # The nHashType is the 8 least significant bits of the sighash type.
         # Some coins set the 24 most significant bits of the sighash type to
         # the fork ID value.

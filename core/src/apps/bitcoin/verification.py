@@ -19,6 +19,7 @@ from .scripts import (
 
 if False:
     from typing import List, Optional, Tuple
+
     from apps.common.coininfo import CoinInfo
 
 

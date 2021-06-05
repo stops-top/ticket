@@ -14,9 +14,8 @@
 # You should have received a copy of the License along with this library.
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
-import struct
-
 import pytest
+import struct
 
 from trezorlib import messages as proto, misc
 from trezorlib.tools import H_

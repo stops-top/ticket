@@ -14,8 +14,10 @@ from .ownership import generate_proof, get_identifier
 
 if False:
     from typing import Optional
+
     from apps.common.coininfo import CoinInfo
     from apps.common.keychain import Keychain
+
     from .authorization import CoinJoinAuthorization
 
 # Maximum number of characters per line in monospace font.

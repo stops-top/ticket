@@ -1,6 +1,6 @@
-import math
 from ubinascii import hexlify
 
+import math
 from trezor import ui
 from trezor.messages import (
     ButtonRequestType,
@@ -32,18 +32,18 @@ from .helpers.utils import (
 )
 
 if False:
-    from typing import List, Optional
     from trezor import wire
+    from trezor.messages.CardanoAddressParametersType import EnumTypeCardanoAddressType
+    from trezor.messages.CardanoAssetGroupType import CardanoAssetGroupType
     from trezor.messages.CardanoBlockchainPointerType import (
         CardanoBlockchainPointerType,
     )
+    from trezor.messages.CardanoPoolMetadataType import CardanoPoolMetadataType
+    from trezor.messages.CardanoPoolOwnerType import CardanoPoolOwnerType
+    from trezor.messages.CardanoPoolParametersType import CardanoPoolParametersType
     from trezor.messages.CardanoTxCertificateType import CardanoTxCertificateType
     from trezor.messages.CardanoTxWithdrawalType import CardanoTxWithdrawalType
-    from trezor.messages.CardanoPoolParametersType import CardanoPoolParametersType
-    from trezor.messages.CardanoPoolOwnerType import CardanoPoolOwnerType
-    from trezor.messages.CardanoPoolMetadataType import CardanoPoolMetadataType
-    from trezor.messages.CardanoAssetGroupType import CardanoAssetGroupType
-    from trezor.messages.CardanoAddressParametersType import EnumTypeCardanoAddressType
+    from typing import List, Optional
 
 
 ADDRESS_TYPE_NAMES = {

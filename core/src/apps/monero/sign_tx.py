@@ -1,5 +1,4 @@
 import gc
-
 from trezor import log, utils, wire
 from trezor.messages import MessageType
 

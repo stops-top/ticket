@@ -15,8 +15,8 @@ from .addresses import (
 )
 
 if False:
-    from trezor.messages.VerifyMessage import VerifyMessage
     from trezor.messages.TxInputType import EnumTypeInputScriptType
+    from trezor.messages.VerifyMessage import VerifyMessage
 
 
 async def verify_message(ctx: wire.Context, msg: VerifyMessage) -> Success:

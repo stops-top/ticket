@@ -10,12 +10,11 @@ from .. import addresses
 from . import omni
 
 if False:
-    from typing import Optional
-
     from trezor import wire
     from trezor.messages.SignTx import EnumTypeAmountUnit
     from trezor.messages.TxOutput import TxOutput
     from trezor.ui.layouts import LayoutType
+    from typing import Optional
 
     from apps.common.coininfo import CoinInfo
 

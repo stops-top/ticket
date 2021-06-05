@@ -12,7 +12,7 @@ def init(
 
 
 # extmod/modtrezorconfig/modtrezorconfig.c
-def unlock(pin: str, ext_salt: Optional[bytes]) -> bool:
+def unlock(pin: int, ext_salt: Optional[bytes]) -> bool:
     """
     Attempts to unlock the storage with the given PIN and external salt.
     Returns True on success, False on failure.
@@ -20,7 +20,7 @@ def unlock(pin: str, ext_salt: Optional[bytes]) -> bool:
 
 
 # extmod/modtrezorconfig/modtrezorconfig.c
-def check_pin(pin: str, ext_salt: Optional[bytes]) -> bool:
+def check_pin(pin: int, ext_salt: Optional[bytes]) -> bool:
     """
     Check the given PIN with the given external salt.
     Returns True on success, False on failure.
@@ -57,8 +57,8 @@ def get_pin_rem() -> int:
 
 # extmod/modtrezorconfig/modtrezorconfig.c
 def change_pin(
-    oldpin: str,
-    newpin: str,
+    oldpin: int,
+    newpin: int,
     old_ext_salt: Optional[bytes],
     new_ext_salt: Optional[bytes],
 ) -> bool:
@@ -68,7 +68,7 @@ def change_pin(
 
 
 # extmod/modtrezorconfig/modtrezorconfig.c
-def ensure_not_wipe_code(pin: str) -> None:
+def ensure_not_wipe_code(pin: int) -> None:
     """
     Wipes the device if the entered PIN is the wipe code.
     """
@@ -83,9 +83,9 @@ def has_wipe_code() -> bool:
 
 # extmod/modtrezorconfig/modtrezorconfig.c
 def change_wipe_code(
-    pin: str,
+    pin: int,
     ext_salt: Optional[bytes],
-    wipe_code: str,
+    wipe_code: int,
 ) -> bool:
     """
     Change wipe code. Returns True on success, False on failure.
@@ -109,9 +109,7 @@ def set(app: int, key: int, value: bytes, public: bool = False) -> None:
 
 
 # extmod/modtrezorconfig/modtrezorconfig.c
-def delete(
-    app: int, key: int, public: bool = False, writable_locked: bool = False
-) -> bool:
+def delete(app: int, key: int, public: bool = False) -> bool:
     """
     Deletes the given key of the given app.
     """
@@ -120,7 +118,7 @@ def delete(
 # extmod/modtrezorconfig/modtrezorconfig.c
 def set_counter(
     app: int, key: int, count: int, writable_locked: bool = False
-) -> None:
+) -> bool:
     """
     Sets the given key of the given app as a counter with the given value.
     """
@@ -129,7 +127,7 @@ def set_counter(
 # extmod/modtrezorconfig/modtrezorconfig.c
 def next_counter(
    app: int, key: int, writable_locked: bool = False,
-) -> int:
+) -> Optional[int]:
     """
     Increments the counter stored under the given key of the given app and
     returns the new value.

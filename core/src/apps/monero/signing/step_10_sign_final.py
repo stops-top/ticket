@@ -18,6 +18,7 @@ from .state import State
 
 if False:
     from typing import Tuple
+
     from apps.monero.xmr.types import Sc25519
 
 

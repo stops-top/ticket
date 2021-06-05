@@ -14,6 +14,7 @@ from .bitcoin import Bitcoin
 
 if False:
     from typing import List, Optional, Union
+
     from .tx_info import OriginalTxInfo, TxInfo
 
 _SIGHASH_FORKID = const(0x40)

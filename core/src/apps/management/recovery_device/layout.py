@@ -17,8 +17,8 @@ from .keyboard_slip39 import Slip39Keyboard
 from .recover import RecoveryAborted
 
 if False:
-    from typing import List, Optional, Callable, Iterable, Tuple, Union
     from trezor.messages.ResetDevice import EnumTypeBackupType
+    from typing import Callable, Iterable, List, Optional, Tuple, Union
 
 
 async def confirm_abort(ctx: wire.GenericContext, dry_run: bool = False) -> bool:

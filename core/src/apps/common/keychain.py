@@ -1,5 +1,4 @@
 import sys
-
 from trezor import wire
 from trezor.crypto import bip32
 
@@ -7,6 +6,7 @@ from . import paths, safety_checks
 from .seed import Slip21Node, get_seed
 
 if False:
+    from protobuf import MessageType
     from typing import (
         Any,
         Awaitable,
@@ -20,8 +20,6 @@ if False:
         Union,
     )
     from typing_extensions import Protocol
-
-    from protobuf import MessageType
 
     T = TypeVar("T")
 

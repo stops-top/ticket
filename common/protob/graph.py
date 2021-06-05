@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 import sys
-from os.path import basename
-
 from graphviz import Digraph
+from os.path import basename
 
 
 class Message(object):

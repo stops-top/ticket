@@ -10,17 +10,15 @@ if not utils.BITCOIN_ONLY:
     from . import bitcoinlike, decred, zcash
 
 if False:
-    from typing import Protocol, Optional, Type, Union
-
     from protobuf import FieldCache
-
     from trezor.messages.SignTx import SignTx
     from trezor.messages.TxAckInput import TxAckInput
     from trezor.messages.TxAckOutput import TxAckOutput
-    from trezor.messages.TxAckPrevMeta import TxAckPrevMeta
-    from trezor.messages.TxAckPrevInput import TxAckPrevInput
-    from trezor.messages.TxAckPrevOutput import TxAckPrevOutput
     from trezor.messages.TxAckPrevExtraData import TxAckPrevExtraData
+    from trezor.messages.TxAckPrevInput import TxAckPrevInput
+    from trezor.messages.TxAckPrevMeta import TxAckPrevMeta
+    from trezor.messages.TxAckPrevOutput import TxAckPrevOutput
+    from typing import Optional, Protocol, Type, Union
 
     from apps.common.coininfo import CoinInfo
     from apps.common.keychain import Keychain

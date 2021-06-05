@@ -7,12 +7,13 @@ from ..common.confirm import CANCELLED, CONFIRMED, INFO, ConfirmBase
 from .button import Button, ButtonAbort, ButtonCancel, ButtonConfirm, ButtonDefault
 
 if __debug__:
-    from apps.debug import swipe_signal, confirm_signal
+    from apps.debug import confirm_signal, swipe_signal
 
 if False:
-    from typing import Any, List, Tuple, Optional
-    from .button import ButtonContent, ButtonStyleType
     from trezor.ui.loader import LoaderStyleType
+    from typing import Any, List, Optional, Tuple
+
+    from .button import ButtonContent, ButtonStyleType
 
 
 class Confirm(ConfirmBase):

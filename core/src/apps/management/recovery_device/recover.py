@@ -7,7 +7,7 @@ from .. import backup_types
 
 if False:
     from trezor.messages.ResetDevice import EnumTypeBackupType
-    from typing import Optional, Tuple, List, Union
+    from typing import List, Optional, Tuple, Union
 
 
 class RecoveryAborted(Exception):

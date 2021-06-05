@@ -5,8 +5,8 @@ from trezor.messages import BackupType
 from trezor.ui.components.tt.text import Text
 
 if False:
-    from typing import Optional, Tuple
     from trezor.messages.ResetDevice import EnumTypeBackupType
+    from typing import Optional, Tuple
 
 
 def get() -> Tuple[Optional[bytes], int]:

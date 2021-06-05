@@ -11,8 +11,9 @@ from trezor.crypto import monero as tcry, random
 from trezor.crypto.hashlib import sha3_256
 
 if False:
-    from typing import Tuple, Optional, Union
-    from apps.monero.xmr.types import Sc25519, Ge25519
+    from typing import Optional, Tuple, Union
+
+    from apps.monero.xmr.types import Ge25519, Sc25519
 
 
 NULL_KEY_ENC = b"\x00" * 32

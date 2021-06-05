@@ -1,11 +1,10 @@
 import json
 import pathlib
+import requests
 import urllib.error
 import urllib.request
 import zipfile
 from typing import Dict
-
-import requests
 
 RECORDS_WEBSITE = "https://firmware.corp.sldev.cz/ui_tests/"
 FIXTURES_MASTER = "https://raw.githubusercontent.com/trezor/trezor-firmware/master/tests/ui_tests/fixtures.json"

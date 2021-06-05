@@ -4,7 +4,7 @@ if __debug__:
     from apps.debug import confirm_signal
 
 if False:
-    from typing import List, Tuple, Optional
+    from typing import List, Optional, Tuple
 
 CONFIRMED = object()
 CANCELLED = object()

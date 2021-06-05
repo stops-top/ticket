@@ -12,8 +12,8 @@ from . import seed
 from .helpers.paths import SCHEMA_PUBKEY
 
 if False:
-    from typing import List
     from trezor.messages.CardanoGetPublicKey import CardanoGetPublicKey
+    from typing import List
 
 
 @seed.with_keychain

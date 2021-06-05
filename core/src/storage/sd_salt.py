@@ -7,7 +7,7 @@ from trezor.sdcard import with_filesystem
 from trezor.utils import consteq
 
 if False:
-    from typing import Optional, TypeVar, Callable
+    from typing import Callable, Optional, TypeVar
 
     T = TypeVar("T", bound=Callable)
 

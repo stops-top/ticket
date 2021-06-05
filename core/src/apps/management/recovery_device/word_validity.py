@@ -4,8 +4,8 @@ from trezor.messages import BackupType
 from . import recover
 
 if False:
-    from typing import List, Optional
     from trezor.messages.ResetDevice import EnumTypeBackupType
+    from typing import List, Optional
 
 
 class WordValidityResult(Exception):

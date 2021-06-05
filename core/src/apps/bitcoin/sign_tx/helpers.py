@@ -31,8 +31,8 @@ from ..writers import TX_HASH_SIZE
 from . import layout
 
 if False:
-    from typing import Any, Awaitable, Optional
     from trezor.messages.SignTx import EnumTypeAmountUnit
+    from typing import Any, Awaitable, Optional
 
 
 # Machine instructions

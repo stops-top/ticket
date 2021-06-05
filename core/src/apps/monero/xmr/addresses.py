@@ -3,12 +3,13 @@ from trezor.crypto import monero as tcry
 from apps.monero.xmr.networks import NetworkTypes, net_version
 
 if False:
-    from typing import List, Tuple, Optional
-    from apps.monero.xmr.types import Ge25519
     from trezor.messages.MoneroAccountPublicAddress import MoneroAccountPublicAddress
     from trezor.messages.MoneroTransactionDestinationEntry import (
         MoneroTransactionDestinationEntry,
     )
+    from typing import List, Optional, Tuple
+
+    from apps.monero.xmr.types import Ge25519
 
 
 def addr_to_hash(addr: MoneroAccountPublicAddress) -> bytes:

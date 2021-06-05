@@ -10,15 +10,16 @@ from apps.monero.signing.state import State
 from apps.monero.xmr import crypto, monero
 
 if False:
-    from typing import List
-    from apps.monero.xmr.types import Sc25519, Ge25519
-    from trezor.messages.MoneroTransactionData import MoneroTransactionData
-    from trezor.messages.MoneroTransactionRsigData import MoneroTransactionRsigData
     from trezor.messages.MoneroAccountPublicAddress import MoneroAccountPublicAddress
+    from trezor.messages.MoneroTransactionData import MoneroTransactionData
     from trezor.messages.MoneroTransactionDestinationEntry import (
         MoneroTransactionDestinationEntry,
     )
     from trezor.messages.MoneroTransactionInitAck import MoneroTransactionInitAck
+    from trezor.messages.MoneroTransactionRsigData import MoneroTransactionRsigData
+    from typing import List
+
+    from apps.monero.xmr.types import Ge25519, Sc25519
 
 
 async def init_transaction(
@@ -28,8 +29,8 @@ async def init_transaction(
     tsx_data: MoneroTransactionData,
     keychain,
 ) -> MoneroTransactionInitAck:
-    from apps.monero.signing import offloading_keys
     from apps.common import paths
+    from apps.monero.signing import offloading_keys
 
     await paths.validate_path(state.ctx, keychain, address_n)
 
@@ -275,6 +276,7 @@ def _compute_sec_keys(state: State, tsx_data: MoneroTransactionData):
     Generate master key H( H(TsxData || tx_priv) || rand )
     """
     import protobuf
+
     from apps.monero.xmr.keccak_hasher import get_keccak_writer
 
     writer = get_keccak_writer()
@@ -363,8 +365,9 @@ def _get_key_for_payment_id_encryption(
     payment id encryption. If no encrypted payment ID is chosen,
     dummy payment ID is set for better transaction uniformity if possible.
     """
-    from apps.monero.xmr.addresses import addr_eq
     from trezor.messages.MoneroAccountPublicAddress import MoneroAccountPublicAddress
+
+    from apps.monero.xmr.addresses import addr_eq
 
     addr = MoneroAccountPublicAddress(
         spend_public_key=crypto.NULL_KEY_ENC, view_public_key=crypto.NULL_KEY_ENC

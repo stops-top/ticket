@@ -4,6 +4,10 @@ if False:
     from typing import Any, Optional
 
 
+def pin_to_int(pin: str) -> int:
+    return int("1" + pin)
+
+
 _previous_progress: Optional[int] = None
 _previous_seconds: Optional[int] = None
 keepalive_callback: Any = None

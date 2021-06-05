@@ -5,6 +5,7 @@ from . import HARDENED
 from .layout import address_n_to_str
 
 if False:
+    from trezor import wire
     from typing import (
         Any,
         Callable,
@@ -17,7 +18,6 @@ if False:
         Union,
     )
     from typing_extensions import Protocol
-    from trezor import wire
 
     Bip32Path = Sequence[int]
     Slip21Path = Sequence[bytes]

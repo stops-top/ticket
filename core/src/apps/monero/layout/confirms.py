@@ -13,12 +13,13 @@ DUMMY_PAYMENT_ID = b"\x00\x00\x00\x00\x00\x00\x00\x00"
 
 
 if False:
-    from typing import Optional
-    from apps.monero.signing.state import State
     from trezor.messages.MoneroTransactionData import MoneroTransactionData
     from trezor.messages.MoneroTransactionDestinationEntry import (
         MoneroTransactionDestinationEntry,
     )
+    from typing import Optional
+
+    from apps.monero.signing.state import State
 
 
 async def require_confirm_watchkey(ctx):
@@ -226,10 +227,11 @@ async def live_refresh_step(ctx, current):
 async def show_address(
     ctx, address: str, desc: str = "Confirm address", network: str = None
 ):
-    from apps.common.confirm import confirm
     from trezor.messages import ButtonRequestType
     from trezor.ui.components.tt.button import ButtonDefault
     from trezor.ui.components.tt.scroll import Paginated
+
+    from apps.common.confirm import confirm
 
     pages = []
     for lines in common.paginate_lines(common.split_address(address), 5):

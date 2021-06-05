@@ -8,6 +8,7 @@ from .swipe import SWIPE_HORIZONTAL, SWIPE_LEFT, Swipe
 
 if False:
     from typing import Iterable, List, Optional, Tuple
+
     from .button import ButtonContent, ButtonStyleStateType
 
 SPACE = res.load(ui.ICON_SPACE)

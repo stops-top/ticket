@@ -30,11 +30,13 @@ from . import approvers, helpers
 from .bitcoinlike import Bitcoinlike
 
 if False:
-    from apps.common import coininfo
     from typing import List, Optional, Union
+
+    from apps.common import coininfo
+
+    from ..writers import Writer
     from .hash143 import Hash143
     from .tx_info import OriginalTxInfo, TxInfo
-    from ..writers import Writer
 
 OVERWINTERED = const(0x8000_0000)
 

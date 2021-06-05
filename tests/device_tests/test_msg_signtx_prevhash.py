@@ -1,8 +1,7 @@
+import pytest
 import re
 from hashlib import sha256
 from io import BytesIO
-
-import pytest
 
 from trezorlib import btc, messages, tools
 from trezorlib.exceptions import TrezorFailure

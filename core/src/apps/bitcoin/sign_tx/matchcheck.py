@@ -5,10 +5,9 @@ from .. import multisig
 from ..common import BIP32_WALLET_DEPTH
 
 if False:
-    from typing import Any, Union, Generic, TypeVar
-
     from trezor.messages.TxInput import TxInput
     from trezor.messages.TxOutput import TxOutput
+    from typing import Any, Generic, TypeVar, Union
 
     T = TypeVar("T")
 else:

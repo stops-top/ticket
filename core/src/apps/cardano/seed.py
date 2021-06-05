@@ -9,10 +9,10 @@ from apps.common.seed import get_seed
 from .helpers import paths
 
 if False:
-    from typing import Callable, Awaitable
+    from typing import Awaitable, Callable
 
+    from apps.common.keychain import Handler, MsgIn, MsgOut
     from apps.common.paths import Bip32Path
-    from apps.common.keychain import MsgIn, MsgOut, Handler
 
     HandlerWithKeychain = Callable[[wire.Context, MsgIn, "Keychain"], Awaitable[MsgOut]]
 

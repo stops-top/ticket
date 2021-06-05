@@ -15,11 +15,11 @@ if __debug__:
 
 
 if False:
-    from typing import Any, Callable, Optional
     from trezor import ui
+    from trezor.messages.ButtonRequest import EnumTypeButtonRequestType
     from trezor.ui.components.tt.confirm import ButtonContent, ButtonStyleType
     from trezor.ui.loader import LoaderStyleType
-    from trezor.messages.ButtonRequest import EnumTypeButtonRequestType
+    from typing import Any, Callable, Optional
 
 
 async def confirm(

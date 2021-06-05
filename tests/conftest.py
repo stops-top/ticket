@@ -15,7 +15,6 @@
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
 import os
-
 import pytest
 
 from trezorlib import debuglink, log

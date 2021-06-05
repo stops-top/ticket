@@ -1,6 +1,5 @@
 import os
 import sys
-
 from device.t1 import TrezorOne
 from device.tt import TrezorT
 

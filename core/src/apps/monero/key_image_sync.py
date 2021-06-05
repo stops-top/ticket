@@ -1,5 +1,4 @@
 import gc
-
 from trezor import log, wire
 from trezor.messages.MoneroExportedKeyImage import MoneroExportedKeyImage
 from trezor.messages.MoneroKeyImageExportInitAck import MoneroKeyImageExportInitAck

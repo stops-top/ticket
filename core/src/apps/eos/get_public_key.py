@@ -10,8 +10,8 @@ from .helpers import public_key_to_wif
 from .layout import require_get_public_key
 
 if False:
-    from typing import Tuple
     from trezor.crypto import bip32
+    from typing import Tuple
 
 
 def _get_public_key(node: bip32.HDNode) -> Tuple[str, bytes]:

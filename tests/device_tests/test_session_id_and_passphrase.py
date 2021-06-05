@@ -14,9 +14,8 @@
 # You should have received a copy of the License along with this library.
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
-import random
-
 import pytest
+import random
 
 from trezorlib import exceptions, messages
 from trezorlib.messages import FailureType

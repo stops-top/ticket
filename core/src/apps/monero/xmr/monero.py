@@ -1,9 +1,10 @@
 from apps.monero.xmr import crypto
 
 if False:
-    from typing import List, Tuple, Optional, Dict
-    from apps.monero.xmr.types import Ge25519, Sc25519
+    from typing import Dict, List, Optional, Tuple
+
     from apps.monero.xmr.credentials import AccountCreds
+    from apps.monero.xmr.types import Ge25519, Sc25519
 
     Subaddresses = Dict[bytes, Tuple[int, int]]
 

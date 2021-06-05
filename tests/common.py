@@ -15,9 +15,8 @@
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
 import json
-from pathlib import Path
-
 import pytest
+from pathlib import Path
 
 from trezorlib import btc, tools
 from trezorlib.messages import ButtonRequestType as B

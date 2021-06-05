@@ -11,9 +11,7 @@ from .. import helpers
 from ..layout import require_confirm
 
 if False:
-    from typing import List
     from trezor import wire
-    from trezor.messages.EosAuthorization import EosAuthorization
     from trezor.messages.EosActionBuyRam import EosActionBuyRam
     from trezor.messages.EosActionBuyRamBytes import EosActionBuyRamBytes
     from trezor.messages.EosActionCommon import EosActionCommon
@@ -28,6 +26,8 @@ if False:
     from trezor.messages.EosActionUnlinkAuth import EosActionUnlinkAuth
     from trezor.messages.EosActionUpdateAuth import EosActionUpdateAuth
     from trezor.messages.EosActionVoteProducer import EosActionVoteProducer
+    from trezor.messages.EosAuthorization import EosAuthorization
+    from typing import List
 
 _LINE_LENGTH = const(17)
 _LINE_PLACEHOLDER = "{:<" + str(_LINE_LENGTH) + "}"

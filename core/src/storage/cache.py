@@ -2,7 +2,7 @@ from trezor import wire
 from trezor.crypto import random
 
 if False:
-    from typing import Optional, Dict, List, Any
+    from typing import Any, Dict, List, Optional
 
 _MAX_SESSIONS_COUNT = 10
 _SESSIONLESS_FLAG = 128

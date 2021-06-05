@@ -48,9 +48,8 @@
 # 8. Scroll down to the bottom and look at the "signatures" section. The Trezor should generate the same signature
 #
 
-from base64 import b64encode
-
 import pytest
+from base64 import b64encode
 
 from trezorlib import messages, stellar
 from trezorlib.tools import parse_path

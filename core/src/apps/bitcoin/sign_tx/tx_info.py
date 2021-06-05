@@ -9,16 +9,17 @@ from ..common import BIP32_WALLET_DEPTH, input_is_external
 from .matchcheck import MultisigFingerprintChecker, WalletPathChecker
 
 if False:
-    from typing import Optional, Protocol, Union
-    from trezor.messages.SignTx import SignTx
-    from trezor.messages.PrevTx import PrevTx
-    from trezor.messages.TxInput import TxInput
-    from trezor.messages.TxOutput import TxOutput
     from trezor.messages.PrevInput import PrevInput
     from trezor.messages.PrevOutput import PrevOutput
-    from .hash143 import Hash143
+    from trezor.messages.PrevTx import PrevTx
+    from trezor.messages.SignTx import SignTx
+    from trezor.messages.TxInput import TxInput
+    from trezor.messages.TxOutput import TxOutput
+    from typing import Optional, Protocol, Union
 
     from apps.common.coininfo import CoinInfo
+
+    from .hash143 import Hash143
 
     class Signer(Protocol):
         coin = ...  # type: CoinInfo

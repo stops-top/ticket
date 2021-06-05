@@ -12,7 +12,7 @@ class StorageComparison(RuleBasedStateMachine):
         self.sc, self.sp = common.init(unlock=True)
         self.sm = StorageModel()
         self.sm.init(b"")
-        self.sm.unlock("")
+        self.sm.unlock(1)
         self.storages = (self.sc, self.sp, self.sm)
 
     keys = Bundle("keys")
@@ -29,10 +29,7 @@ class StorageComparison(RuleBasedStateMachine):
 
     @rule(target=pins, p=st.integers(1, 3))
     def p(self, p):
-        if p == 1:
-            return ""
-        else:
-            return str(p)
+        return p
 
     @rule(k=keys, v=values)
     def set(self, k, v):

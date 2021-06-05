@@ -1,8 +1,8 @@
 if __debug__:
-    import gc
     import micropython
-    import sys
 
+    import gc
+    import sys
     from trezor import log
 
     PREV_MEM = gc.mem_free()

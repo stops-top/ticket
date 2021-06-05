@@ -3,7 +3,6 @@ Output destinations are streamed one by one.
 Computes destination one-time address, amount key, range proof + HMAC, out_pk, ecdh_info.
 """
 import gc
-
 from trezor import utils
 
 from apps.monero import signing
@@ -14,17 +13,18 @@ from apps.monero.xmr import crypto, serialize
 from .state import State
 
 if False:
-    from typing import Tuple
-    from apps.monero.xmr.types import Sc25519, Ge25519
-    from apps.monero.xmr.serialize_messages.tx_ecdh import EcdhTuple
-    from apps.monero.xmr.serialize_messages.tx_rsig_bulletproof import Bulletproof
     from trezor.messages.MoneroTransactionDestinationEntry import (
         MoneroTransactionDestinationEntry,
     )
+    from trezor.messages.MoneroTransactionRsigData import MoneroTransactionRsigData
     from trezor.messages.MoneroTransactionSetOutputAck import (
         MoneroTransactionSetOutputAck,
     )
-    from trezor.messages.MoneroTransactionRsigData import MoneroTransactionRsigData
+    from typing import Tuple
+
+    from apps.monero.xmr.serialize_messages.tx_ecdh import EcdhTuple
+    from apps.monero.xmr.serialize_messages.tx_rsig_bulletproof import Bulletproof
+    from apps.monero.xmr.types import Ge25519, Sc25519
 
 
 async def set_output(

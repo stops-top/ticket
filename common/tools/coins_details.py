@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 """Fetch information about coins and tokens supported by Trezor and update it in coins_details.json."""
+import click
+import coin_info
 import json
 import logging
+import marketcap
 import os
 import sys
 import time
-
-import click
-
-import coin_info
-import marketcap
 
 LOG = logging.getLogger(__name__)
 
@@ -22,7 +20,10 @@ VERSIONS = coin_info.latest_releases()
 
 # automatic wallet entries
 WALLET_SUITE = {"Trezor Suite": "https://suite.trezor.io"}
-WALLET_NEM = {"Nano Wallet": "https://nem.io/downloads/"}
+WALLET_NEM = {
+    "Nano Wallet": "https://nem.io/downloads/",
+    "Magnum": "https://magnumwallet.co",
+}
 WALLETS_ETH_3RDPARTY = {
     "MyEtherWallet": "https://www.myetherwallet.com",
     "MyCrypto": "https://mycrypto.com",

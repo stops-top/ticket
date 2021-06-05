@@ -1,4 +1,5 @@
 from c.storage import Storage as StorageC
+
 from python.src import prng
 from python.src.storage import Storage as StoragePy
 
@@ -15,7 +16,7 @@ def init(
     for s in (sc, sp):
         s.init(uid)
         if unlock:
-            assert s.unlock("")
+            assert s.unlock(1)
     return sc, sp
 
 

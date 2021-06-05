@@ -24,10 +24,9 @@ from ..constants.tt import (
 from .common import interact
 
 if False:
-    from typing import Any, Iterator, List, Sequence, Union, Optional
-
     from trezor import wire
     from trezor.messages.ButtonRequest import EnumTypeButtonRequestType
+    from typing import Any, Iterator, List, Optional, Sequence, Union
 
     from . import LayoutType
 

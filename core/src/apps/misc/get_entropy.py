@@ -6,8 +6,8 @@ from trezor.ui.components.tt.text import Text
 from apps.common.confirm import require_confirm
 
 if False:
-    from trezor.wire import Context
     from trezor.messages.GetEntropy import GetEntropy
+    from trezor.wire import Context
 
 
 async def get_entropy(ctx: Context, msg: GetEntropy) -> Entropy:

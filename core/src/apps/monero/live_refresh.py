@@ -1,5 +1,4 @@
 import gc
-
 import storage.cache
 from trezor import log
 from trezor.messages import MessageType

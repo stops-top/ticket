@@ -7,10 +7,11 @@ from trezor.messages import InputScriptType, OutputScriptType
 from trezor.utils import ensure
 
 if False:
-    from apps.common.coininfo import CoinInfo
-    from typing import Dict
     from trezor.messages.TxInput import EnumTypeInputScriptType, TxInput
     from trezor.messages.TxOutput import EnumTypeOutputScriptType
+    from typing import Dict
+
+    from apps.common.coininfo import CoinInfo
 
 
 BITCOIN_NAMES = ("Bitcoin", "Regtest", "Testnet")

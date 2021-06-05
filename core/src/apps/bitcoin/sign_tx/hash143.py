@@ -10,7 +10,7 @@ from apps.common import coininfo
 from .. import scripts, writers
 
 if False:
-    from typing import List, Union, Protocol
+    from typing import List, Protocol, Union
 
     class Hash143(Protocol):
         def add_input(self, txi: TxInput) -> None:

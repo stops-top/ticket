@@ -10,11 +10,11 @@ from apps.monero.xmr import crypto
 from .state import State
 
 if False:
-    from trezor.messages.MoneroTransactionSourceEntry import (
-        MoneroTransactionSourceEntry,
-    )
     from trezor.messages.MoneroTransactionInputViniAck import (
         MoneroTransactionInputViniAck,
+    )
+    from trezor.messages.MoneroTransactionSourceEntry import (
+        MoneroTransactionSourceEntry,
     )
 
 

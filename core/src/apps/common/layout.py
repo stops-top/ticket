@@ -13,8 +13,8 @@ from apps.common import HARDENED
 from apps.common.confirm import confirm
 
 if False:
-    from typing import Iterable, Iterator, List, Union
     from trezor import wire
+    from typing import Iterable, Iterator, List, Union
 
 
 async def show_qr(

@@ -17,8 +17,8 @@ from .. import backup_types
 from . import layout, recover
 
 if False:
-    from typing import Optional, Tuple
     from trezor.messages.ResetDevice import EnumTypeBackupType
+    from typing import Optional, Tuple
 
 
 async def recovery_homescreen() -> None:

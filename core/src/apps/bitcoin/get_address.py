@@ -11,12 +11,13 @@ from .keychain import validate_path_against_script_type, with_keychain
 from .multisig import multisig_pubkey_index
 
 if False:
-    from typing import List
+    from trezor import wire
     from trezor.messages.GetAddress import GetAddress
     from trezor.messages.HDNodeType import HDNodeType
-    from trezor import wire
-    from apps.common.keychain import Keychain
+    from typing import List
+
     from apps.common.coininfo import CoinInfo
+    from apps.common.keychain import Keychain
 
 
 def _get_xpubs(

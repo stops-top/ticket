@@ -41,40 +41,16 @@ class PinInput(ui.Component):
             self.repaint = False
 
     def render_pin(self) -> None:
-        MAX_LENGTH = const(14)  # maximum length of displayed PIN
-        CONTD_MARK = "<"
+        display.bar(0, 0, ui.WIDTH, 50, ui.BG)
+        count = len(self.pin)
         BOX_WIDTH = const(240)
         DOT_SIZE = const(10)
-        PADDING = const(4)
+        PADDING = const(14)
         RENDER_Y = const(20)
-        TWITCH = const(3)
-
-        display.bar(0, 0, ui.WIDTH, 50, ui.BG)
-
-        if len(self.pin) > MAX_LENGTH:
-            contd_width = display.text_width(CONTD_MARK, ui.BOLD) + PADDING
-            twitch = TWITCH * (len(self.pin) % 2)
-        else:
-            contd_width = 0
-            twitch = 0
-
-        count = min(len(self.pin), MAX_LENGTH)
-        render_x = (BOX_WIDTH - count * (DOT_SIZE + PADDING) - contd_width) // 2
-
-        if contd_width:
-            display.text(
-                render_x, RENDER_Y + DOT_SIZE, CONTD_MARK, ui.BOLD, ui.GREY, ui.BG
-            )
-
+        render_x = (BOX_WIDTH - count * PADDING) // 2
         for i in range(0, count):
             display.bar_radius(
-                render_x + contd_width + twitch + i * (DOT_SIZE + PADDING),
-                RENDER_Y,
-                DOT_SIZE,
-                DOT_SIZE,
-                ui.GREY,
-                ui.BG,
-                4,
+                render_x + i * PADDING, RENDER_Y, DOT_SIZE, DOT_SIZE, ui.GREY, ui.BG, 4
             )
 
     def render_prompt(self) -> None:
@@ -106,7 +82,7 @@ class PinDialog(ui.Layout):
         prompt: str,
         subprompt: Optional[str],
         allow_cancel: bool = True,
-        maxlength: int = 50,
+        maxlength: int = 9,
     ) -> None:
         self.maxlength = maxlength
         self.input = PinInput(prompt, subprompt, "")

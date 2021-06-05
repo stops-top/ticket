@@ -11,15 +11,14 @@ from .helpers import INVALID_CERTIFICATE, LOVELACE_MAX_SUPPLY
 from .helpers.paths import SCHEMA_STAKING_ANY_ACCOUNT
 
 if False:
-    from typing import List, Optional
-
-    from trezor.messages.CardanoTxCertificateType import CardanoTxCertificateType
+    from trezor.messages.CardanoPoolMetadataType import CardanoPoolMetadataType
+    from trezor.messages.CardanoPoolOwnerType import CardanoPoolOwnerType
     from trezor.messages.CardanoPoolParametersType import CardanoPoolParametersType
     from trezor.messages.CardanoPoolRelayParametersType import (
         CardanoPoolRelayParametersType,
     )
-    from trezor.messages.CardanoPoolOwnerType import CardanoPoolOwnerType
-    from trezor.messages.CardanoPoolMetadataType import CardanoPoolMetadataType
+    from trezor.messages.CardanoTxCertificateType import CardanoTxCertificateType
+    from typing import List, Optional
 
     from apps.common.cbor import CborSequence
 

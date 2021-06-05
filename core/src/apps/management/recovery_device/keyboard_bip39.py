@@ -9,8 +9,8 @@ from trezor.ui.components.tt.button import (
 )
 
 if False:
-    from typing import Optional, Tuple
     from trezor.ui.components.tt.button import ButtonContent, ButtonStyleStateType
+    from typing import Optional, Tuple
 
 
 def compute_mask(text: str) -> int:

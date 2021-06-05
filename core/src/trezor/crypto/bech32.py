@@ -21,7 +21,7 @@
 """Reference implementation for Bech32 and segwit addresses."""
 
 if False:
-    from typing import Iterable, List, Optional, Tuple, Union, TypeVar
+    from typing import Iterable, List, Optional, Tuple, TypeVar, Union
 
     A = TypeVar("A")
     B = TypeVar("B")

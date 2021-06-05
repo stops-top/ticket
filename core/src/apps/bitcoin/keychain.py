@@ -8,12 +8,11 @@ from apps.common.paths import PATTERN_BIP44, PathSchema
 from .common import BITCOIN_NAMES
 
 if False:
+    from trezor.messages.TxInputType import EnumTypeInputScriptType
     from typing import Awaitable, Callable, Iterable, List, Optional, Tuple, TypeVar
     from typing_extensions import Protocol
 
-    from trezor.messages.TxInputType import EnumTypeInputScriptType
-
-    from apps.common.keychain import Keychain, MsgOut, Handler
+    from apps.common.keychain import Handler, Keychain, MsgOut
     from apps.common.paths import Bip32Path
 
     from .authorization import CoinJoinAuthorization

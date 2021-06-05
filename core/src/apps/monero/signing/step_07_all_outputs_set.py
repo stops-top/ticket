@@ -5,7 +5,6 @@ The prefix hash is then complete.
 """
 
 import gc
-
 from trezor import utils
 
 from apps.monero.layout import confirms

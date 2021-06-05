@@ -11,14 +11,15 @@ from .helpers.utils import variable_length_encode
 from .seed import is_byron_path, is_shelley_path
 
 if False:
-    from typing import List, Optional
-    from trezor.messages.CardanoBlockchainPointerType import (
-        CardanoBlockchainPointerType,
-    )
     from trezor.messages.CardanoAddressParametersType import (
         CardanoAddressParametersType,
         EnumTypeCardanoAddressType,
     )
+    from trezor.messages.CardanoBlockchainPointerType import (
+        CardanoBlockchainPointerType,
+    )
+    from typing import List, Optional
+
     from . import seed
 
 ADDRESS_TYPES_SHELLEY = (

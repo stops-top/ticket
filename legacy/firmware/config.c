@@ -85,6 +85,9 @@ static const uint32_t META_MAGIC_V10 = 0xFFFFFFFF;
 
 #define MAX_SESSIONS_COUNT 10
 
+// The PIN value corresponding to an empty PIN.
+static const uint32_t PIN_EMPTY = 1;
+
 static uint32_t config_uuid[UUID_SIZE / sizeof(uint32_t)];
 _Static_assert(sizeof(config_uuid) == UUID_SIZE, "config_uuid has wrong size");
 
@@ -147,6 +150,23 @@ static const uint32_t CONFIG_VERSION = 11;
 
 static const uint8_t FALSE_BYTE = '\x00';
 static const uint8_t TRUE_BYTE = '\x01';
+
+static uint32_t pin_to_int(const char *pin) {
+  uint32_t val = 1;
+  size_t i = 0;
+  for (i = 0; i < MAX_PIN_LEN && pin[i] != '\0'; ++i) {
+    if (pin[i] < '0' || pin[i] > '9') {
+      return 0;
+    }
+    val = 10 * val + pin[i] - '0';
+  }
+
+  if (pin[i] != '\0') {
+    return 0;
+  }
+
+  return val;
+}
 
 static secbool config_set_bool(uint16_t key, bool value) {
   if (value) {
@@ -314,10 +334,9 @@ static secbool config_upgrade_v10(void) {
   }
 
   storage_init(NULL, HW_ENTROPY_DATA, HW_ENTROPY_LEN);
-  storage_unlock(PIN_EMPTY, PIN_EMPTY_LEN, NULL);
+  storage_unlock(PIN_EMPTY, NULL);
   if (config.has_pin) {
-    storage_change_pin(PIN_EMPTY, PIN_EMPTY_LEN, (const uint8_t *)config.pin,
-                       strnlen(config.pin, MAX_PIN_LEN), NULL, NULL);
+    storage_change_pin(PIN_EMPTY, pin_to_int(config.pin), NULL, NULL);
   }
 
   while (pin_wait != 0) {
@@ -391,7 +410,7 @@ void config_init(void) {
 
   // Auto-unlock storage if no PIN is set.
   if (storage_is_unlocked() == secfalse && storage_has_pin() == secfalse) {
-    storage_unlock(PIN_EMPTY, PIN_EMPTY_LEN, NULL);
+    storage_unlock(PIN_EMPTY, NULL);
   }
 
   uint16_t len = 0;
@@ -763,8 +782,7 @@ bool config_containsMnemonic(const char *mnemonic) {
  */
 bool config_unlock(const char *pin) {
   char oldTiny = usbTiny(1);
-  secbool ret =
-      storage_unlock((const uint8_t *)pin, strnlen(pin, MAX_PIN_LEN), NULL);
+  secbool ret = storage_unlock(pin_to_int(pin), NULL);
   usbTiny(oldTiny);
   return sectrue == ret;
 }
@@ -772,21 +790,27 @@ bool config_unlock(const char *pin) {
 bool config_hasPin(void) { return sectrue == storage_has_pin(); }
 
 bool config_changePin(const char *old_pin, const char *new_pin) {
+  uint32_t new_pin_int = pin_to_int(new_pin);
+  if (new_pin_int == 0) {
+    return false;
+  }
+
   char oldTiny = usbTiny(1);
-  secbool ret = storage_change_pin(
-      (const uint8_t *)old_pin, strnlen(old_pin, MAX_PIN_LEN),
-      (const uint8_t *)new_pin, strnlen(new_pin, MAX_PIN_LEN), NULL, NULL);
+  secbool ret =
+      storage_change_pin(pin_to_int(old_pin), new_pin_int, NULL, NULL);
   usbTiny(oldTiny);
 
 #if DEBUG_LINK
   if (sectrue == ret) {
-    if (new_pin[0] != '\0') {
+    if (new_pin_int != PIN_EMPTY) {
       storage_set(KEY_DEBUG_LINK_PIN, new_pin, strnlen(new_pin, MAX_PIN_LEN));
     } else {
       storage_delete(KEY_DEBUG_LINK_PIN);
     }
   }
 #endif
+
+  memzero(&new_pin_int, sizeof(new_pin_int));
 
   return sectrue == ret;
 }
@@ -800,11 +824,16 @@ bool config_getPin(char *dest, uint16_t dest_size) {
 bool config_hasWipeCode(void) { return sectrue == storage_has_wipe_code(); }
 
 bool config_changeWipeCode(const char *pin, const char *wipe_code) {
+  uint32_t wipe_code_int = pin_to_int(wipe_code);
+  if (wipe_code_int == 0) {
+    return false;
+  }
+
   char oldTiny = usbTiny(1);
-  secbool ret = storage_change_wipe_code(
-      (const uint8_t *)pin, strnlen(pin, MAX_PIN_LEN), NULL,
-      (const uint8_t *)wipe_code, strnlen(wipe_code, MAX_PIN_LEN));
+  secbool ret = storage_change_wipe_code(pin_to_int(pin), NULL, wipe_code_int);
   usbTiny(oldTiny);
+
+  memzero(&wipe_code_int, sizeof(wipe_code_int));
   return sectrue == ret;
 }
 
@@ -953,7 +982,7 @@ void config_wipe(void) {
   char oldTiny = usbTiny(1);
   storage_wipe();
   if (storage_is_unlocked() != sectrue) {
-    storage_unlock(PIN_EMPTY, PIN_EMPTY_LEN, NULL);
+    storage_unlock(PIN_EMPTY, NULL);
   }
   usbTiny(oldTiny);
   random_buffer((uint8_t *)config_uuid, sizeof(config_uuid));

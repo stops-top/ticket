@@ -2,9 +2,8 @@
 """Fetch market capitalization data."""
 import json
 import os
-import time
-
 import requests
+import time
 
 COINMAKETCAP_CACHE = os.path.join(os.path.dirname(__file__), "coinmarketcap.json")
 COINMARKETCAP_API_BASE = "https://pro-api.coinmarketcap.com/v1/"

@@ -7,7 +7,7 @@ from .confirm import CANCELLED, CONFIRMED
 from .swipe import SWIPE_DOWN, SWIPE_UP, SWIPE_VERTICAL, Swipe
 
 if __debug__:
-    from apps.debug import confirm_signal, swipe_signal, notify_layout_change
+    from apps.debug import confirm_signal, notify_layout_change, swipe_signal
 
 if False:
     from typing import List, Tuple

@@ -1,11 +1,10 @@
 import hashlib
 import json
+import pytest
 import re
 import shutil
 from contextlib import contextmanager
 from pathlib import Path
-
-import pytest
 
 from .reporting import testreport
 

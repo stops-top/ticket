@@ -14,11 +14,10 @@
 # You should have received a copy of the License along with this library.
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from itertools import combinations
-from unittest import mock
-
 import pytest
+from itertools import combinations
 from shamir_mnemonic import MnemonicError, shamir
+from unittest import mock
 
 from trezorlib import device, messages as proto
 from trezorlib.exceptions import TrezorFailure

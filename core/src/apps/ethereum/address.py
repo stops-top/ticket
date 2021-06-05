@@ -9,6 +9,7 @@ def address_from_bytes(address_bytes: bytes, network=None) -> str:
     in https://github.com/ethereum/EIPs/blob/master/EIPS/eip-55.md
     """
     from ubinascii import hexlify
+
     from trezor.crypto.hashlib import sha3_256
 
     rskip60 = network is not None and network.rskip60

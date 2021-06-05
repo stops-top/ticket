@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
+import click
 import json
 import os
+import requests
 import subprocess
 import tempfile
-
-import click
-import requests
 
 LIVE_URL = "https://trezor.io/static/json/coins_details.json"
 COINS_DETAILS = os.path.join(

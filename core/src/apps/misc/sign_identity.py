@@ -12,11 +12,10 @@ from apps.common.keychain import get_keychain
 from apps.common.paths import AlwaysMatchingSchema
 
 if False:
-    from typing import List, Optional, Union
-
     from trezor.messages.IdentityType import IdentityType
     from trezor.messages.SignIdentity import SignIdentity
     from trezor.ui.components.common.text import TextContent
+    from typing import List, Optional, Union
 
     from apps.common.paths import Bip32Path
 

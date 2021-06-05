@@ -47,6 +47,8 @@ from trezor.wire.errors import ActionCancelled, DataError, Error
 from trezor.wire.errors import *  # isort:skip # noqa: F401,F403
 
 if False:
+    from trezorio import WireInterface
+
     from typing import (
         Any,
         Awaitable,
@@ -59,7 +61,6 @@ if False:
         Type,
         TypeVar,
     )
-    from trezorio import WireInterface
 
     Msg = TypeVar("Msg", bound=protobuf.MessageType)
     HandlerTask = Coroutine[Any, Any, protobuf.MessageType]

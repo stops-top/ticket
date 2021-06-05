@@ -21,10 +21,10 @@ from apps.monero.layout.confirms import transaction_step
 from .state import State
 
 if False:
-    from typing import List
     from trezor.messages.MoneroTransactionInputsPermutationAck import (
         MoneroTransactionInputsPermutationAck,
     )
+    from typing import List
 
 
 async def tsx_inputs_permutation(
