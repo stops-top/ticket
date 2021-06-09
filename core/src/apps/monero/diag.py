@@ -1,8 +1,8 @@
 if __debug__:
-    import micropython
-
     import gc
+    import micropython
     import sys
+
     from trezor import log
 
     PREV_MEM = gc.mem_free()
@@ -36,7 +36,7 @@ if __debug__:
         PREV_MEM = free
 
     def retit(**kwargs):
-        from trezor.messages.Failure import Failure
+        from trezor.messages import Failure
 
         return Failure(**kwargs)
 

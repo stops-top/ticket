@@ -6,14 +6,10 @@ from trezor.ui.loader import Loader, LoaderDefault
 from ..common.confirm import CANCELLED, CONFIRMED, INFO, ConfirmBase
 from .button import Button, ButtonAbort, ButtonCancel, ButtonConfirm, ButtonDefault
 
-if __debug__:
-    from apps.debug import confirm_signal, swipe_signal
-
 if False:
-    from trezor.ui.loader import LoaderStyleType
-    from typing import Any, List, Optional, Tuple
-
+    from typing import Any
     from .button import ButtonContent, ButtonStyleType
+    from trezor.ui.loader import LoaderStyleType
 
 
 class Confirm(ConfirmBase):
@@ -25,15 +21,15 @@ class Confirm(ConfirmBase):
     def __init__(
         self,
         content: ui.Component,
-        confirm: Optional[ButtonContent] = DEFAULT_CONFIRM,
+        confirm: ButtonContent | None = DEFAULT_CONFIRM,
         confirm_style: ButtonStyleType = DEFAULT_CONFIRM_STYLE,
-        cancel: Optional[ButtonContent] = DEFAULT_CANCEL,
+        cancel: ButtonContent | None = DEFAULT_CANCEL,
         cancel_style: ButtonStyleType = DEFAULT_CANCEL_STYLE,
         major_confirm: bool = False,
     ) -> None:
         self.content = content
-        button_confirm: Optional[Button] = None
-        button_cancel: Optional[Button] = None
+        button_confirm: Button | None = None
+        button_cancel: Button | None = None
 
         if confirm is not None:
             if cancel is None:
@@ -97,6 +93,8 @@ class ConfirmPageable(Confirm):
             directions = SWIPE_HORIZONTAL
 
         if __debug__:
+            from apps.debug import swipe_signal
+
             swipe = await loop.race(Swipe(directions), swipe_signal())
         else:
             swipe = await Swipe(directions)
@@ -112,7 +110,7 @@ class ConfirmPageable(Confirm):
         if self.cancel is not None:
             self.cancel.repaint = True
 
-    def create_tasks(self) -> Tuple[loop.Task, ...]:
+    def create_tasks(self) -> tuple[loop.Task, ...]:
         tasks = super().create_tasks()
         if self.pageable.page_count() > 1:
             return tasks + (self.handle_paging(),)
@@ -193,10 +191,12 @@ class InfoConfirm(ui.Layout):
 
     if __debug__:
 
-        def read_content(self) -> List[str]:
+        def read_content(self) -> list[str]:
             return self.content.read_content()
 
-        def create_tasks(self) -> Tuple[loop.Task, ...]:
+        def create_tasks(self) -> tuple[loop.Task, ...]:
+            from apps.debug import confirm_signal
+
             return super().create_tasks() + (confirm_signal(),)
 
 
@@ -270,8 +270,10 @@ class HoldToConfirm(ui.Layout):
 
     if __debug__:
 
-        def read_content(self) -> List[str]:
+        def read_content(self) -> list[str]:
             return self.content.read_content()
 
-        def create_tasks(self) -> Tuple[loop.Task, ...]:
+        def create_tasks(self) -> tuple[loop.Task, ...]:
+            from apps.debug import confirm_signal
+
             return super().create_tasks() + (confirm_signal(),)

@@ -15,6 +15,7 @@
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
 import os
+
 import pytest
 
 from ..emulators import ALL_TAGS, LOCAL_BUILD_PATHS
@@ -95,3 +96,10 @@ def for_all(*args, legacy_minimum_version=(1, 0, 0), core_minimum_version=(2, 0,
         return pytest.mark.skip("no versions are applicable")
 
     return pytest.mark.parametrize("gen, tag", all_params)
+
+
+def for_tags(*args):
+    enabled_gens = SELECTED_GENS or ("core", "legacy")
+    return pytest.mark.parametrize(
+        "gen, tags", [(gen, tags) for gen, tags in args if gen in enabled_gens]
+    )

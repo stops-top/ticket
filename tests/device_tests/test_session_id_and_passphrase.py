@@ -14,8 +14,9 @@
 # You should have received a copy of the License along with this library.
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
-import pytest
 import random
+
+import pytest
 
 from trezorlib import exceptions, messages
 from trezorlib.messages import FailureType
@@ -54,13 +55,13 @@ def _get_xpub(client, passphrase=None):
     """Get XPUB and check that the appropriate passphrase flow has happened."""
     if passphrase is not None:
         expected_responses = [
-            messages.PassphraseRequest(),
-            messages.ButtonRequest(),
-            messages.ButtonRequest(),
-            messages.PublicKey(),
+            messages.PassphraseRequest,
+            messages.ButtonRequest,
+            messages.ButtonRequest,
+            messages.PublicKey,
         ]
     else:
-        expected_responses = [messages.PublicKey()]
+        expected_responses = [messages.PublicKey]
 
     with client:
         client.use_passphrase(passphrase or "")

@@ -1,11 +1,11 @@
 from trezor import utils, wire
 from trezor.crypto import base58, cashaddr
 from trezor.crypto.hashlib import sha256
-from trezor.messages import InputScriptType
+from trezor.enums import InputScriptType
 
 from apps.common import address_type
 from apps.common.readers import read_bitcoin_varint
-from apps.common.writers import empty_bytearray, write_bitcoin_varint
+from apps.common.writers import write_bitcoin_varint
 
 from . import common
 from .multisig import (
@@ -22,9 +22,7 @@ from .writers import (
 )
 
 if False:
-    from trezor.messages.MultisigRedeemScriptType import MultisigRedeemScriptType
-    from trezor.messages.TxInput import EnumTypeInputScriptType, TxInput
-    from typing import List, Optional, Tuple
+    from trezor.messages import MultisigRedeemScriptType, TxInput
 
     from apps.common.coininfo import CoinInfo
 
@@ -32,8 +30,8 @@ if False:
 
 
 def input_derive_script(
-    script_type: EnumTypeInputScriptType,
-    multisig: Optional[MultisigRedeemScriptType],
+    script_type: InputScriptType,
+    multisig: MultisigRedeemScriptType | None,
     coin: CoinInfo,
     hash_type: int,
     pubkey: bytes,
@@ -113,7 +111,7 @@ def output_derive_script(address: str, coin: CoinInfo) -> bytes:
 # see https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki#specification
 # item 5 for details
 def bip143_derive_script_code(
-    txi: TxInput, public_keys: List[bytes], threshold: int, coin: CoinInfo
+    txi: TxInput, public_keys: list[bytes], threshold: int, coin: CoinInfo
 ) -> bytearray:
     if len(public_keys) > 1:
         return output_script_multisig(public_keys, threshold)
@@ -141,13 +139,13 @@ def bip143_derive_script_code(
 def input_script_p2pkh_or_p2sh(
     pubkey: bytes, signature: bytes, hash_type: int
 ) -> bytearray:
-    w = empty_bytearray(5 + len(signature) + 1 + 5 + len(pubkey))
+    w = utils.empty_bytearray(5 + len(signature) + 1 + 5 + len(pubkey))
     append_signature(w, signature, hash_type)
     append_pubkey(w, pubkey)
     return w
 
 
-def parse_input_script_p2pkh(script_sig: bytes) -> Tuple[bytes, bytes, int]:
+def parse_input_script_p2pkh(script_sig: bytes) -> tuple[bytes, bytes, int]:
     try:
         r = utils.BufferReader(script_sig)
         n = read_op_push(r)
@@ -211,7 +209,7 @@ def output_script_native_p2wpkh_or_p2wsh(witprog: bytes) -> bytearray:
     length = len(witprog)
     utils.ensure(length == 20 or length == 32)
 
-    w = empty_bytearray(3 + length)
+    w = utils.empty_bytearray(3 + length)
     w.append(0x00)  # witness version byte
     w.append(length)  # pub key hash length is 20 (P2WPKH) or 32 (P2WSH) bytes
     write_bytes_fixed(w, witprog, length)  # pub key hash
@@ -231,7 +229,7 @@ def input_script_p2wpkh_in_p2sh(pubkeyhash: bytes) -> bytearray:
     # Signature is moved to the witness.
     utils.ensure(len(pubkeyhash) == 20)
 
-    w = empty_bytearray(3 + len(pubkeyhash))
+    w = utils.empty_bytearray(3 + len(pubkeyhash))
     w.append(0x16)  # length of the data
     w.append(0x00)  # witness version byte
     w.append(0x14)  # P2WPKH witness program (pub key hash length)
@@ -254,7 +252,7 @@ def input_script_p2wsh_in_p2sh(script_hash: bytes) -> bytearray:
     if len(script_hash) != 32:
         raise wire.DataError("Redeem script hash should be 32 bytes long")
 
-    w = empty_bytearray(3 + len(script_hash))
+    w = utils.empty_bytearray(3 + len(script_hash))
     w.append(0x22)  # length of the data
     w.append(0x00)  # witness version byte
     w.append(0x20)  # P2WSH witness program (redeem script hash length)
@@ -267,14 +265,14 @@ def input_script_p2wsh_in_p2sh(script_hash: bytes) -> bytearray:
 
 
 def witness_p2wpkh(signature: bytes, pubkey: bytes, hash_type: int) -> bytearray:
-    w = empty_bytearray(1 + 5 + len(signature) + 1 + 5 + len(pubkey))
+    w = utils.empty_bytearray(1 + 5 + len(signature) + 1 + 5 + len(pubkey))
     write_bitcoin_varint(w, 0x02)  # num of segwit items, in P2WPKH it's always 2
     write_signature_prefixed(w, signature, hash_type)
     write_bytes_prefixed(w, pubkey)
     return w
 
 
-def parse_witness_p2wpkh(witness: bytes) -> Tuple[bytes, bytes, int]:
+def parse_witness_p2wpkh(witness: bytes) -> tuple[bytes, bytes, int]:
     try:
         r = utils.BufferReader(witness)
 
@@ -326,7 +324,7 @@ def witness_multisig(
         total_length += 1 + len(s) + 1  # length, signature, hash_type
     total_length += 1 + redeem_script_length  # length, script
 
-    w = empty_bytearray(total_length)
+    w = utils.empty_bytearray(total_length)
 
     write_bitcoin_varint(w, num_of_witness_items)
     # Starts with OP_FALSE because of an old OP_CHECKMULTISIG bug, which
@@ -344,7 +342,7 @@ def witness_multisig(
     return w
 
 
-def parse_witness_multisig(witness: bytes) -> Tuple[bytes, List[Tuple[bytes, int]]]:
+def parse_witness_multisig(witness: bytes) -> tuple[bytes, list[tuple[bytes, int]]]:
     try:
         r = utils.BufferReader(witness)
 
@@ -399,7 +397,7 @@ def input_script_multisig(
         total_length += 1 + len(s) + 1  # length, signature, hash_type
     total_length += 1 + redeem_script_length  # length, script
 
-    w = empty_bytearray(total_length)
+    w = utils.empty_bytearray(total_length)
 
     # Starts with OP_FALSE because of an old OP_CHECKMULTISIG bug, which
     # consumes one additional item on the stack:
@@ -419,7 +417,7 @@ def input_script_multisig(
 
 def parse_input_script_multisig(
     script_sig: bytes,
-) -> Tuple[bytes, List[Tuple[bytes, int]]]:
+) -> tuple[bytes, list[tuple[bytes, int]]]:
     try:
         r = utils.BufferReader(script_sig)
 
@@ -444,13 +442,13 @@ def parse_input_script_multisig(
     return script, signatures
 
 
-def output_script_multisig(pubkeys: List[bytes], m: int) -> bytearray:
-    w = empty_bytearray(output_script_multisig_length(pubkeys, m))
+def output_script_multisig(pubkeys: list[bytes], m: int) -> bytearray:
+    w = utils.empty_bytearray(output_script_multisig_length(pubkeys, m))
     write_output_script_multisig(w, pubkeys, m)
     return w
 
 
-def write_output_script_multisig(w: Writer, pubkeys: List[bytes], m: int) -> None:
+def write_output_script_multisig(w: Writer, pubkeys: list[bytes], m: int) -> None:
     n = len(pubkeys)
     if n < 1 or n > 15 or m < 1 or m > 15 or m > n:
         raise wire.DataError("Invalid multisig parameters")
@@ -465,11 +463,11 @@ def write_output_script_multisig(w: Writer, pubkeys: List[bytes], m: int) -> Non
     w.append(0xAE)  # OP_CHECKMULTISIG
 
 
-def output_script_multisig_length(pubkeys: List[bytes], m: int) -> int:
+def output_script_multisig_length(pubkeys: list[bytes], m: int) -> int:
     return 1 + len(pubkeys) * (1 + 33) + 1 + 1  # see output_script_multisig
 
 
-def parse_output_script_multisig(script: bytes) -> Tuple[List[bytes], int]:
+def parse_output_script_multisig(script: bytes) -> tuple[list[bytes], int]:
     try:
         r = utils.BufferReader(script)
 
@@ -507,7 +505,7 @@ def parse_output_script_multisig(script: bytes) -> Tuple[List[bytes], int]:
 
 
 def output_script_paytoopreturn(data: bytes) -> bytearray:
-    w = empty_bytearray(1 + 5 + len(data))
+    w = utils.empty_bytearray(1 + 5 + len(data))
     w.append(0x6A)  # OP_RETURN
     write_op_push(w, len(data))
     w.extend(data)
@@ -521,8 +519,8 @@ def output_script_paytoopreturn(data: bytes) -> bytearray:
 
 def write_bip322_signature_proof(
     w: Writer,
-    script_type: EnumTypeInputScriptType,
-    multisig: Optional[MultisigRedeemScriptType],
+    script_type: InputScriptType,
+    multisig: MultisigRedeemScriptType | None,
     coin: CoinInfo,
     public_key: bytes,
     signature: bytes,
@@ -547,7 +545,7 @@ def write_bip322_signature_proof(
     w.extend(witness)
 
 
-def read_bip322_signature_proof(r: utils.BufferReader) -> Tuple[bytes, bytes]:
+def read_bip322_signature_proof(r: utils.BufferReader) -> tuple[bytes, bytes]:
     script_sig = read_bytes_prefixed(r)
     witness = r.read()
     return script_sig, witness

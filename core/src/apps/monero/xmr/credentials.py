@@ -3,9 +3,7 @@ from apps.monero.xmr.addresses import encode_addr
 from apps.monero.xmr.networks import NetworkTypes, net_version
 
 if False:
-    from typing import Optional
-
-    from apps.monero.xmr.types import Ge25519, Sc25519
+    from apps.monero.xmr.types import Sc25519, Ge25519
 
 
 class AccountCreds:
@@ -15,11 +13,11 @@ class AccountCreds:
 
     def __init__(
         self,
-        view_key_private: Optional[Sc25519] = None,
-        spend_key_private: Optional[Sc25519] = None,
-        view_key_public: Optional[Ge25519] = None,
-        spend_key_public: Optional[Ge25519] = None,
-        address: Optional[str] = None,
+        view_key_private: Sc25519 | None = None,
+        spend_key_private: Sc25519 | None = None,
+        view_key_public: Ge25519 | None = None,
+        spend_key_public: Ge25519 | None = None,
+        address: str | None = None,
         network_type=NetworkTypes.MAINNET,
     ):
         self.view_key_private = view_key_private

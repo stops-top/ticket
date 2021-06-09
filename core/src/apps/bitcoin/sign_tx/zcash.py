@@ -3,11 +3,8 @@ from micropython import const
 
 from trezor import wire
 from trezor.crypto.hashlib import blake2b
-from trezor.messages import InputScriptType
-from trezor.messages.PrevTx import PrevTx
-from trezor.messages.SignTx import SignTx
-from trezor.messages.TxInput import TxInput
-from trezor.messages.TxOutput import TxOutput
+from trezor.enums import InputScriptType
+from trezor.messages import PrevTx, SignTx, TxInput, TxOutput
 from trezor.utils import HashWriter, ensure
 
 from apps.common.coininfo import CoinInfo
@@ -30,13 +27,10 @@ from . import approvers, helpers
 from .bitcoinlike import Bitcoinlike
 
 if False:
-    from typing import List, Optional, Union
-
     from apps.common import coininfo
-
-    from ..writers import Writer
     from .hash143 import Hash143
     from .tx_info import OriginalTxInfo, TxInfo
+    from ..writers import Writer
 
 OVERWINTERED = const(0x8000_0000)
 
@@ -58,9 +52,9 @@ class Zip243Hash:
     def preimage_hash(
         self,
         txi: TxInput,
-        public_keys: List[bytes],
+        public_keys: list[bytes],
         threshold: int,
-        tx: Union[SignTx, PrevTx],
+        tx: SignTx | PrevTx,
         coin: coininfo.CoinInfo,
         sighash_type: int,
     ) -> bytes:
@@ -147,11 +141,11 @@ class Zcashlike(Bitcoinlike):
         self,
         i: int,
         txi: TxInput,
-        tx_info: Union[TxInfo, OriginalTxInfo],
-        public_keys: List[bytes],
+        tx_info: TxInfo | OriginalTxInfo,
+        public_keys: list[bytes],
         threshold: int,
         script_pubkey: bytes,
-        tx_hash: Optional[bytes] = None,
+        tx_hash: bytes | None = None,
     ) -> bytes:
         return tx_info.hash143.preimage_hash(
             txi,
@@ -163,7 +157,7 @@ class Zcashlike(Bitcoinlike):
         )
 
     def write_tx_header(
-        self, w: Writer, tx: Union[SignTx, PrevTx], witness_marker: bool
+        self, w: Writer, tx: SignTx | PrevTx, witness_marker: bool
     ) -> None:
         if tx.version < 3:
             # pre-overwinter
@@ -175,7 +169,7 @@ class Zcashlike(Bitcoinlike):
             write_uint32(w, tx.version | OVERWINTERED)
             write_uint32(w, tx.version_group_id)  # nVersionGroupId
 
-    def write_tx_footer(self, w: Writer, tx: Union[SignTx, PrevTx]) -> None:
+    def write_tx_footer(self, w: Writer, tx: SignTx | PrevTx) -> None:
         assert tx.expiry is not None  # checked in sanitize_*
         write_uint32(w, tx.lock_time)
         if tx.version >= 3:
@@ -183,7 +177,7 @@ class Zcashlike(Bitcoinlike):
 
 
 def derive_script_code(
-    txi: TxInput, public_keys: List[bytes], threshold: int, coin: CoinInfo
+    txi: TxInput, public_keys: list[bytes], threshold: int, coin: CoinInfo
 ) -> bytearray:
     if len(public_keys) > 1:
         return output_script_multisig(public_keys, threshold)

@@ -1,8 +1,9 @@
 import hypothesis.strategies as st
-from c0.storage import Storage as StorageC0
-from c.storage import Storage as StorageC
 from hypothesis import assume, settings
 from hypothesis.stateful import Bundle, RuleBasedStateMachine, invariant, rule
+
+from c0.storage import Storage as StorageC0
+from c.storage import Storage as StorageC
 
 from . import common
 from .storage_model import StorageModel
@@ -32,7 +33,10 @@ class StorageUpgrade(RuleBasedStateMachine):
 
     @rule(target=pins, p=st.integers(1, 3))
     def p(self, p):
-        return p
+        if p == 1:
+            return ""
+        else:
+            return str(p)
 
     @rule(k=keys, v=values)
     def set(self, k, v):

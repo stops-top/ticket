@@ -1,8 +1,9 @@
 from ubinascii import hexlify
 
 from trezor import ui, wire
-from trezor.messages import ButtonRequestType
+from trezor.enums import ButtonRequestType
 from trezor.ui.components.tt.text import Text
+from trezor.ui.layouts import confirm_action
 from trezor.ui.popup import Popup
 from trezor.utils import chunks
 
@@ -13,44 +14,63 @@ DUMMY_PAYMENT_ID = b"\x00\x00\x00\x00\x00\x00\x00\x00"
 
 
 if False:
-    from trezor.messages.MoneroTransactionData import MoneroTransactionData
-    from trezor.messages.MoneroTransactionDestinationEntry import (
+    from apps.monero.signing.state import State
+    from trezor.messages import (
+        MoneroTransactionData,
         MoneroTransactionDestinationEntry,
     )
-    from typing import Optional
-
-    from apps.monero.signing.state import State
 
 
 async def require_confirm_watchkey(ctx):
-    content = Text("Confirm export", ui.ICON_SEND, ui.GREEN)
-    content.normal("Do you really want to", "export watch-only", "credentials?")
-    await require_confirm(ctx, content, ButtonRequestType.SignTx)
+    await confirm_action(
+        ctx,
+        "get_watchkey",
+        "Confirm export",
+        description="Do you really want to export watch-only credentials?",
+        icon=ui.ICON_SEND,
+        icon_color=ui.GREEN,
+        br_code=ButtonRequestType.SignTx,
+    )
 
 
 async def require_confirm_keyimage_sync(ctx):
-    content = Text("Confirm ki sync", ui.ICON_SEND, ui.GREEN)
-    content.normal("Do you really want to", "sync key images?")
-    await require_confirm(ctx, content, ButtonRequestType.SignTx)
+    await confirm_action(
+        ctx,
+        "key_image_sync",
+        "Confirm ki sync",
+        description="Do you really want to\nsync key images?",
+        icon=ui.ICON_SEND,
+        icon_color=ui.GREEN,
+        br_code=ButtonRequestType.SignTx,
+    )
 
 
 async def require_confirm_live_refresh(ctx):
-    content = Text("Confirm refresh", ui.ICON_SEND, ui.GREEN)
-    content.normal("Do you really want to", "start refresh?")
-    await require_confirm(ctx, content, ButtonRequestType.SignTx)
+    await confirm_action(
+        ctx,
+        "live_refresh",
+        "Confirm refresh",
+        description="Do you really want to\nstart refresh?",
+        icon=ui.ICON_SEND,
+        icon_color=ui.GREEN,
+        br_code=ButtonRequestType.SignTx,
+    )
 
 
 async def require_confirm_tx_key(ctx, export_key=False):
-    content = Text("Confirm export", ui.ICON_SEND, ui.GREEN)
-    txt = ["Do you really want to"]
     if export_key:
-        txt.append("export tx_key?")
+        description = "Do you really want to export tx_key?"
     else:
-        txt.append("export tx_der")
-        txt.append("for tx_proof?")
-
-    content.normal(*txt)
-    await require_confirm(ctx, content, ButtonRequestType.SignTx)
+        description = "Do you really want to export tx_der\nfor tx_proof?"
+    await confirm_action(
+        ctx,
+        "export_tx_key",
+        "Confirm export",
+        description=description,
+        icon=ui.ICON_SEND,
+        icon_color=ui.GREEN,
+        br_code=ButtonRequestType.SignTx,
+    )
 
 
 async def require_confirm_transaction(
@@ -188,7 +208,7 @@ class LiveRefreshStep(ui.Component):
         )
 
 
-async def transaction_step(state: State, step: int, sub_step: Optional[int] = None):
+async def transaction_step(state: State, step: int, sub_step: int | None = None):
     if step == 0:
         info = ["Signing..."]
     elif step == state.STEP_INP:
@@ -227,11 +247,10 @@ async def live_refresh_step(ctx, current):
 async def show_address(
     ctx, address: str, desc: str = "Confirm address", network: str = None
 ):
-    from trezor.messages import ButtonRequestType
+    from apps.common.confirm import confirm
+    from trezor.enums import ButtonRequestType
     from trezor.ui.components.tt.button import ButtonDefault
     from trezor.ui.components.tt.scroll import Paginated
-
-    from apps.common.confirm import confirm
 
     pages = []
     for lines in common.paginate_lines(common.split_address(address), 5):

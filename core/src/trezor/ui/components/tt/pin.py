@@ -8,7 +8,7 @@ from .button import Button, ButtonCancel, ButtonClear, ButtonConfirm, ButtonMono
 
 if False:
     from trezor import loop
-    from typing import Iterable, Optional, Tuple
+    from typing import Iterable
 
 
 def digit_area(i: int) -> ui.Area:
@@ -26,7 +26,7 @@ def generate_digits() -> Iterable[int]:
 
 
 class PinInput(ui.Component):
-    def __init__(self, prompt: str, subprompt: Optional[str], pin: str) -> None:
+    def __init__(self, prompt: str, subprompt: str | None, pin: str) -> None:
         super().__init__()
         self.prompt = prompt
         self.subprompt = subprompt
@@ -41,16 +41,40 @@ class PinInput(ui.Component):
             self.repaint = False
 
     def render_pin(self) -> None:
-        display.bar(0, 0, ui.WIDTH, 50, ui.BG)
-        count = len(self.pin)
+        MAX_LENGTH = const(14)  # maximum length of displayed PIN
+        CONTD_MARK = "<"
         BOX_WIDTH = const(240)
         DOT_SIZE = const(10)
-        PADDING = const(14)
+        PADDING = const(4)
         RENDER_Y = const(20)
-        render_x = (BOX_WIDTH - count * PADDING) // 2
+        TWITCH = const(3)
+
+        display.bar(0, 0, ui.WIDTH, 50, ui.BG)
+
+        if len(self.pin) > MAX_LENGTH:
+            contd_width = display.text_width(CONTD_MARK, ui.BOLD) + PADDING
+            twitch = TWITCH * (len(self.pin) % 2)
+        else:
+            contd_width = 0
+            twitch = 0
+
+        count = min(len(self.pin), MAX_LENGTH)
+        render_x = (BOX_WIDTH - count * (DOT_SIZE + PADDING) - contd_width) // 2
+
+        if contd_width:
+            display.text(
+                render_x, RENDER_Y + DOT_SIZE, CONTD_MARK, ui.BOLD, ui.GREY, ui.BG
+            )
+
         for i in range(0, count):
             display.bar_radius(
-                render_x + i * PADDING, RENDER_Y, DOT_SIZE, DOT_SIZE, ui.GREY, ui.BG, 4
+                render_x + contd_width + twitch + i * (DOT_SIZE + PADDING),
+                RENDER_Y,
+                DOT_SIZE,
+                DOT_SIZE,
+                ui.GREY,
+                ui.BG,
+                4,
             )
 
     def render_prompt(self) -> None:
@@ -80,9 +104,9 @@ class PinDialog(ui.Layout):
     def __init__(
         self,
         prompt: str,
-        subprompt: Optional[str],
+        subprompt: str | None,
         allow_cancel: bool = True,
-        maxlength: int = 9,
+        maxlength: int = 50,
     ) -> None:
         self.maxlength = maxlength
         self.input = PinInput(prompt, subprompt, "")
@@ -151,7 +175,7 @@ class PinDialog(ui.Layout):
 
     if __debug__:
 
-        def create_tasks(self) -> Tuple[loop.Task, ...]:
+        def create_tasks(self) -> tuple[loop.Task, ...]:
             from apps.debug import input_signal
 
             return super().create_tasks() + (input_signal(),)

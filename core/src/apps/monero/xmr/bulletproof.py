@@ -1,6 +1,6 @@
+import gc
 from micropython import const
 
-import gc
 from trezor import utils
 from trezor.utils import memcpy as tmemcpy
 

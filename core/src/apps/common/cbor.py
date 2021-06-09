@@ -10,10 +10,10 @@ from trezor import log, utils
 from . import readers
 
 if False:
-    from typing import Any, Iterable, List, Tuple, Union
+    from typing import Any, Union, Iterator, Tuple
 
     Value = Any
-    CborSequence = Union[List[Value], Tuple[Value, ...]]
+    CborSequence = Union[list[Value], Tuple[Value, ...]]
 
 _CBOR_TYPE_MASK = const(0xE0)
 _CBOR_INFO_BITS = const(0x1F)
@@ -55,7 +55,7 @@ def _header(typ: int, l: int) -> bytes:
         raise NotImplementedError("Length %d not suppported" % l)
 
 
-def _cbor_encode(value: Value) -> Iterable[bytes]:
+def _cbor_encode(value: Value) -> Iterator[bytes]:
     if isinstance(value, int):
         if value >= 0:
             yield _header(_CBOR_UNSIGNED_INT, value)
@@ -214,7 +214,7 @@ class Raw:
 
 
 class IndefiniteLengthArray:
-    def __init__(self, array: List[Value]) -> None:
+    def __init__(self, array: list[Value]) -> None:
         self.array = array
 
     def __eq__(self, other: object) -> bool:
@@ -228,6 +228,47 @@ class IndefiniteLengthArray:
 
 def encode(value: Value) -> bytes:
     return b"".join(_cbor_encode(value))
+
+
+def encode_streamed(value: Value) -> Iterator[bytes]:
+    """
+    Returns the encoded value as an iterable of the individual
+    CBOR "chunks", removing the need to reserve a continuous
+    chunk of memory for the full serialized representation of the value
+    """
+    return _cbor_encode(value)
+
+
+def encode_chunked(value: Value, max_chunk_size: int) -> Iterator[bytes]:
+    """
+    Returns the encoded value as an iterable of chunks of a given size,
+    removing the need to reserve a continuous chunk of memory for the
+    full serialized representation of the value.
+    """
+    if max_chunk_size <= 0:
+        raise ValueError
+
+    chunks = encode_streamed(value)
+
+    chunk_buffer = utils.empty_bytearray(max_chunk_size)
+    try:
+        current_chunk_view = utils.BufferReader(next(chunks))
+        while True:
+            num_bytes_to_write = min(
+                current_chunk_view.remaining_count(),
+                max_chunk_size - len(chunk_buffer),
+            )
+            chunk_buffer.extend(current_chunk_view.read(num_bytes_to_write))
+
+            if len(chunk_buffer) >= max_chunk_size:
+                yield chunk_buffer
+                chunk_buffer[:] = bytes()
+
+            if current_chunk_view.remaining_count() == 0:
+                current_chunk_view = utils.BufferReader(next(chunks))
+    except StopIteration:
+        if len(chunk_buffer) > 0:
+            yield chunk_buffer
 
 
 def decode(cbor: bytes) -> Value:

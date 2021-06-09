@@ -11,6 +11,7 @@ on output masks as pseudo outputs have to remain same.
 """
 
 import gc
+
 from trezor import utils
 
 from apps.monero.layout import confirms
@@ -19,13 +20,8 @@ from apps.monero.xmr import crypto
 from .state import State
 
 if False:
-    from trezor.messages.MoneroTransactionSignInputAck import (
-        MoneroTransactionSignInputAck,
-    )
-    from trezor.messages.MoneroTransactionSourceEntry import (
-        MoneroTransactionSourceEntry,
-    )
-    from typing import List
+    from trezor.messages import MoneroTransactionSourceEntry
+    from trezor.messages import MoneroTransactionSignInputAck
 
 
 async def sign_input(
@@ -172,8 +168,8 @@ async def sign_input(
 
     state.mem_trace(4, True)
 
-    from apps.monero import signing
     from apps.monero.xmr import mlsag
+    from apps.monero import signing
 
     mg_buffer = []
     ring_pubkeys = [x.key for x in src_entr.outputs if x]
@@ -207,9 +203,7 @@ async def sign_input(
     del (CtKey, input_secret_key, pseudo_out_alpha, mlsag, ring_pubkeys)
     state.mem_trace(6, True)
 
-    from trezor.messages.MoneroTransactionSignInputAck import (
-        MoneroTransactionSignInputAck,
-    )
+    from trezor.messages import MoneroTransactionSignInputAck
 
     # Encrypt signature, reveal once protocol finishes OK
     if state.client_version >= 3:
@@ -224,14 +218,14 @@ async def sign_input(
     )
 
 
-def _protect_signature(state: State, mg_buffer: List[bytes]) -> List[bytes]:
+def _protect_signature(state: State, mg_buffer: list[bytes]) -> list[bytes]:
     """
     Encrypts the signature with keys derived from state.opening_key.
     After protocol finishes without error, opening_key is sent to the
     host.
     """
-    from trezor.crypto import chacha20poly1305, random
-
+    from trezor.crypto import random
+    from trezor.crypto import chacha20poly1305
     from apps.monero.signing import offloading_keys
 
     if state.last_step != state.STEP_SIGN:

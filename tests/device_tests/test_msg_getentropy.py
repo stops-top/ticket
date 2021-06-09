@@ -15,6 +15,7 @@
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
 import math
+
 import pytest
 
 from trezorlib import messages as m, misc

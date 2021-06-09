@@ -1,6 +1,6 @@
 .PHONY: vendor
 
-JOBS = 8
+JOBS = 4
 MAKE = make -j $(JOBS)
 SCONS = scons -Q -j $(JOBS)
 
@@ -12,6 +12,7 @@ PRODTEST_BUILD_DIR    = $(BUILD_DIR)/prodtest
 REFLASH_BUILD_DIR     = $(BUILD_DIR)/reflash
 FIRMWARE_BUILD_DIR    = $(BUILD_DIR)/firmware
 UNIX_BUILD_DIR        = $(BUILD_DIR)/unix
+RUST_BUILD_DIR        = $(BUILD_DIR)/rust
 
 UNAME_S := $(shell uname -s)
 UNIX_PORT_OPTS ?=
@@ -23,8 +24,10 @@ BITCOIN_ONLY ?= 0
 TREZOR_MODEL ?= T
 TREZOR_MEMPERF ?= 0
 
-OPENOCD = openocd -f interface/stlink.cfg -c "transport select hla_swd" -f target/stm32f4x.cfg
-OPENOCD_T1 = openocd -f interface/stlink.cfg -c "transport select hla_swd" -f target/stm32f2x.cfg
+OPENOCD_INTERFACE ?= stlink   # -or- ftdi/olimex-arm-usb-tiny-h
+OPENOCD_TRANSPORT ?= hla_swd  # -or- jtag
+OPENOCD = openocd -f interface/$(OPENOCD_INTERFACE).cfg -c "transport select $(OPENOCD_TRANSPORT)" -f target/stm32f4x.cfg
+OPENOCD_T1 = openocd -f interface/$(OPENOCD_INTERFACE).cfg -c "transport select $(OPENOCD_TRANSPORT)" -f target/stm32f2x.cfg
 
 BOARDLOADER_START   = 0x08000000
 BOOTLOADER_START    = 0x08020000
@@ -39,8 +42,7 @@ FIRMWARE_P1_MAXSIZE = 786432
 FIRMWARE_P2_MAXSIZE = 917504
 FIRMWARE_MAXSIZE    = 1703936
 
-GITREV=$(shell git describe --always --dirty | tr '-' '_')
-CFLAGS += -DGITREV=$(GITREV)
+CFLAGS += -DSCM_REVISION='\"$(shell git rev-parse HEAD | sed 's:\(..\):\\x\1:g')\"'
 
 TESTPATH = $(CURDIR)/../tests
 
@@ -158,7 +160,7 @@ build_cross: ## build mpy-cross port
 
 ## clean commands:
 
-clean: clean_boardloader clean_bootloader clean_prodtest clean_firmware clean_unix clean_cross ## clean all
+clean: clean_boardloader clean_bootloader clean_bootloader_ci clean_prodtest clean_reflash clean_firmware clean_unix clean_cross ## clean all
 	rm -f ".sconsign.dblite"
 
 clean_boardloader: ## clean boardloader build
@@ -167,6 +169,9 @@ clean_boardloader: ## clean boardloader build
 clean_bootloader: ## clean bootloader build
 	rm -rf $(BOOTLOADER_BUILD_DIR)
 
+clean_bootloader_ci: ## clean bootloader_ci build
+	rm -rf $(BOOTLOADER_CI_BUILD_DIR)
+
 clean_prodtest: ## clean prodtest build
 	rm -rf $(PRODTEST_BUILD_DIR)
 
@@ -174,10 +179,10 @@ clean_reflash: ## clean reflash build
 	rm -rf $(REFLASH_BUILD_DIR)
 
 clean_firmware: ## clean firmware build
-	rm -rf $(FIRMWARE_BUILD_DIR)
+	rm -rf $(FIRMWARE_BUILD_DIR) $(RUST_BUILD_DIR)
 
 clean_unix: ## clean unix build
-	rm -rf $(UNIX_BUILD_DIR)
+	rm -rf $(UNIX_BUILD_DIR) $(RUST_BUILD_DIR)
 
 clean_cross: ## clean mpy-cross build
 	$(MAKE) -C vendor/micropython/mpy-cross clean $(CROSS_PORT_OPTS)

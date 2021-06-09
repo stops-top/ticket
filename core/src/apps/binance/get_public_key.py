@@ -1,8 +1,7 @@
 from ubinascii import hexlify
 
-from trezor.messages.BinanceGetPublicKey import BinanceGetPublicKey
-from trezor.messages.BinancePublicKey import BinancePublicKey
-from trezor.ui.layouts import require, show_pubkey
+from trezor.messages import BinanceGetPublicKey, BinancePublicKey
+from trezor.ui.layouts import show_pubkey
 
 from apps.common import paths
 from apps.common.keychain import Keychain, auto_keychain
@@ -15,6 +14,6 @@ async def get_public_key(ctx, msg: BinanceGetPublicKey, keychain: Keychain):
     pubkey = node.public_key()
 
     if msg.show_display:
-        await require(show_pubkey(ctx, hexlify(pubkey).decode()))
+        await show_pubkey(ctx, hexlify(pubkey).decode())
 
     return BinancePublicKey(public_key=pubkey)

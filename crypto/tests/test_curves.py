@@ -1,12 +1,13 @@
 #!/usr/bin/py.test
 import binascii
 import ctypes as c
-import curve25519
-import ecdsa
 import hashlib
 import os
-import pytest
 import random
+
+import curve25519
+import ecdsa
+import pytest
 
 
 def bytes2num(s):

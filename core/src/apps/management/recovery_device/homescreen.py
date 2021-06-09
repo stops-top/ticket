@@ -5,20 +5,16 @@ import storage.recovery_shares
 from trezor import strings, utils, wire, workflow
 from trezor.crypto import slip39
 from trezor.crypto.hashlib import sha256
+from trezor.enums import BackupType, MessageType
 from trezor.errors import MnemonicError
-from trezor.messages import BackupType
-from trezor.messages.Success import Success
-from trezor.ui.layouts import require, show_success
+from trezor.messages import Success
+from trezor.ui.layouts import show_success
 
 from apps.common import mnemonic
 from apps.homescreen.homescreen import homescreen
 
 from .. import backup_types
 from . import layout, recover
-
-if False:
-    from trezor.messages.ResetDevice import EnumTypeBackupType
-    from typing import Optional, Tuple
 
 
 async def recovery_homescreen() -> None:
@@ -32,6 +28,7 @@ async def recovery_homescreen() -> None:
 
 
 async def recovery_process(ctx: wire.GenericContext) -> Success:
+    wire.AVOID_RESTARTING_FOR = (MessageType.Initialize, MessageType.GetFeatures)
     try:
         return await _continue_recovery_process(ctx)
     except recover.RecoveryAborted:
@@ -94,7 +91,7 @@ async def _continue_recovery_process(ctx: wire.GenericContext) -> Success:
 
 
 async def _finish_recovery_dry_run(
-    ctx: wire.GenericContext, secret: bytes, backup_type: EnumTypeBackupType
+    ctx: wire.GenericContext, secret: bytes, backup_type: BackupType
 ) -> Success:
     if backup_type is None:
         raise RuntimeError
@@ -127,7 +124,7 @@ async def _finish_recovery_dry_run(
 
 
 async def _finish_recovery(
-    ctx: wire.GenericContext, secret: bytes, backup_type: EnumTypeBackupType
+    ctx: wire.GenericContext, secret: bytes, backup_type: BackupType
 ) -> Success:
     if backup_type is None:
         raise RuntimeError
@@ -146,10 +143,8 @@ async def _finish_recovery(
 
     storage.recovery.end_progress()
 
-    await require(
-        show_success(
-            ctx, "success_recovery", "You have successfully recovered your wallet."
-        )
+    await show_success(
+        ctx, "success_recovery", "You have successfully recovered your wallet."
     )
     return Success(message="Device recovered")
 
@@ -164,13 +159,13 @@ async def _request_word_count(ctx: wire.GenericContext, dry_run: bool) -> int:
 
 async def _process_words(
     ctx: wire.GenericContext, words: str
-) -> Tuple[Optional[bytes], EnumTypeBackupType]:
+) -> tuple[bytes | None, BackupType]:
     word_count = len(words.split(" "))
     is_slip39 = backup_types.is_slip39_word_count(word_count)
 
     share = None
     if not is_slip39:  # BIP-39
-        secret: Optional[bytes] = recover.process_bip39(words)
+        secret: bytes | None = recover.process_bip39(words)
     else:
         secret, share = recover.process_slip39(words)
 

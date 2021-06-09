@@ -3,15 +3,12 @@ from micropython import const
 from trezor import wire
 from trezor.crypto import bech32, bip32, der
 from trezor.crypto.curve import secp256k1
-from trezor.messages import InputScriptType, OutputScriptType
+from trezor.enums import InputScriptType, OutputScriptType
 from trezor.utils import ensure
 
 if False:
-    from trezor.messages.TxInput import EnumTypeInputScriptType, TxInput
-    from trezor.messages.TxOutput import EnumTypeOutputScriptType
-    from typing import Dict
-
     from apps.common.coininfo import CoinInfo
+    from trezor.messages import TxInput
 
 
 BITCOIN_NAMES = ("Bitcoin", "Regtest", "Testnet")
@@ -36,9 +33,7 @@ MULTISIG_OUTPUT_SCRIPT_TYPES = (
     OutputScriptType.PAYTOWITNESS,
 )
 
-CHANGE_OUTPUT_TO_INPUT_SCRIPT_TYPES: Dict[
-    EnumTypeOutputScriptType, EnumTypeInputScriptType
-] = {
+CHANGE_OUTPUT_TO_INPUT_SCRIPT_TYPES: dict[OutputScriptType, InputScriptType] = {
     OutputScriptType.PAYTOADDRESS: InputScriptType.SPENDADDRESS,
     OutputScriptType.PAYTOMULTISIG: InputScriptType.SPENDMULTISIG,
     OutputScriptType.PAYTOP2SHWITNESS: InputScriptType.SPENDP2SHWITNESS,

@@ -1,20 +1,22 @@
 from trezor.crypto import random
-from trezor.messages import ButtonRequestType
-from trezor.messages.Entropy import Entropy
-from trezor.ui.components.tt.text import Text
-
-from apps.common.confirm import require_confirm
+from trezor.enums import ButtonRequestType
+from trezor.messages import Entropy
+from trezor.ui.layouts import confirm_action
 
 if False:
-    from trezor.messages.GetEntropy import GetEntropy
     from trezor.wire import Context
+    from trezor.messages import GetEntropy
 
 
 async def get_entropy(ctx: Context, msg: GetEntropy) -> Entropy:
-    text = Text("Confirm entropy")
-    text.bold("Do you really want", "to send entropy?")
-    text.normal("Continue only if you", "know what you are doing!")
-    await require_confirm(ctx, text, code=ButtonRequestType.ProtectCall)
+    await confirm_action(
+        ctx,
+        "get_entropy",
+        "Confirm entropy",
+        action="Do you really want\nto send entropy?",
+        description="Continue only if you\nknow what you are doing!",
+        br_code=ButtonRequestType.ProtectCall,
+    )
 
     size = min(msg.size, 1024)
     entropy = random.bytes(size)

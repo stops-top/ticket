@@ -1,28 +1,18 @@
 from trezor import log, wire, workflow
-from trezor.messages import ButtonRequestType
-from trezor.messages.ButtonAck import ButtonAck
-from trezor.messages.ButtonRequest import ButtonRequest
-
-from ..components.common.confirm import CONFIRMED
+from trezor.enums import ButtonRequestType
+from trezor.messages import ButtonAck, ButtonRequest
 
 if False:
-    from trezor.messages.ButtonRequest import EnumTypeButtonRequestType
     from typing import Any, Awaitable
 
     LayoutType = Awaitable[Any]
-
-
-async def require(a: LayoutType) -> None:
-    result = await a
-    if result is not CONFIRMED:
-        raise wire.ActionCancelled
 
 
 async def interact(
     ctx: wire.GenericContext,
     layout: LayoutType,
     brtype: str,
-    brcode: EnumTypeButtonRequestType = ButtonRequestType.Other,
+    brcode: ButtonRequestType = ButtonRequestType.Other,
 ) -> Any:
     log.debug(__name__, "ButtonRequest.type={}".format(brtype))
     workflow.close_others()

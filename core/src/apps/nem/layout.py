@@ -1,5 +1,5 @@
 from trezor import ui
-from trezor.messages import ButtonRequestType
+from trezor.enums import ButtonRequestType
 from trezor.strings import format_amount
 from trezor.ui.components.tt.text import Text
 
@@ -9,9 +9,8 @@ from .helpers import NEM_MAX_DIVISIBILITY
 
 
 async def require_confirm_text(ctx, action: str):
-    content = action.split(" ")
     text = Text("Confirm action", ui.ICON_SEND, ui.GREEN, new_lines=False)
-    text.normal(*content)
+    text.normal(action)
     await require_confirm(ctx, text, ButtonRequestType.ConfirmOutput)
 
 

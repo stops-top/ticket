@@ -1,19 +1,13 @@
 import storage.device
 import storage.resident_credentials
 from trezor import wire
-from trezor.messages.Success import Success
-from trezor.messages.WebAuthnRemoveResidentCredential import (
-    WebAuthnRemoveResidentCredential,
-)
+from trezor.messages import Success, WebAuthnRemoveResidentCredential
 
 from apps.common.confirm import require_confirm
 
 from .confirm import ConfirmContent, ConfirmInfo
 from .credential import Fido2Credential
 from .resident_credentials import get_resident_credential
-
-if False:
-    from typing import Optional
 
 
 class ConfirmRemoveCredential(ConfirmInfo):
@@ -28,7 +22,7 @@ class ConfirmRemoveCredential(ConfirmInfo):
     def app_name(self) -> str:
         return self._cred.app_name()
 
-    def account_name(self) -> Optional[str]:
+    def account_name(self) -> str | None:
         return self._cred.account_name()
 
 

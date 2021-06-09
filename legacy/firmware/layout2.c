@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "bignum.h"
 #include "bitmaps.h"
@@ -584,10 +585,17 @@ void layoutConfirmNondefaultLockTime(uint32_t lock_time,
                       _("will have no effect."), NULL, _("Continue?"), NULL);
 
   } else {
-    char str_locktime[11] = {0};
-    snprintf(str_locktime, sizeof(str_locktime), "%" PRIu32, lock_time);
-    char *str_type = (lock_time < LOCKTIME_TIMESTAMP_MIN_VALUE) ? "blockheight:"
-                                                                : "timestamp:";
+    char str_locktime[20] = {0};
+    char *str_type = NULL;
+    if (lock_time < LOCKTIME_TIMESTAMP_MIN_VALUE) {
+      str_type = "blockheight:";
+      snprintf(str_locktime, sizeof(str_locktime), "%" PRIu32, lock_time);
+    } else {
+      str_type = "timestamp (UTC):";
+      time_t time = lock_time;
+      const struct tm *tm = gmtime(&time);
+      strftime(str_locktime, sizeof(str_locktime), "%F %T", tm);
+    }
 
     layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL,
                       _("Locktime for this"), _("transaction is set to"),
@@ -1236,4 +1244,19 @@ void layoutConfirmAutoLockDelay(uint32_t delay_ms) {
   layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL,
                     _("Do you really want to"), _("auto-lock your device"),
                     line, NULL, NULL, NULL);
+}
+
+void layoutConfirmSafetyChecks(SafetyCheckLevel safety_ckeck_level) {
+  if (safety_ckeck_level == SafetyCheckLevel_Strict) {
+    // Disallow unsafe actions. This is the default.
+    layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL,
+                      _("Do you really want to"), _("enforce strict safety"),
+                      _("checks?"), _("(Recommended.)"), NULL, NULL);
+  } else if (safety_ckeck_level == SafetyCheckLevel_PromptTemporarily) {
+    // Ask user before unsafe action. Reverts to Strict after reboot.
+    layoutDialogSwipe(&bmp_icon_question, _("Cancel"), _("Confirm"), NULL,
+                      _("Do you really want to"), _("be temporarily able"),
+                      _("to approve some"), _("actions which might"),
+                      _("be unsafe?"), NULL);
+  }
 }

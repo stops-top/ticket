@@ -15,8 +15,9 @@
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
 import itertools
-import pytest
 from unittest import mock
+
+import pytest
 
 from trezorlib import btc, device, messages
 from trezorlib.messages import BackupType, ButtonRequestType as B

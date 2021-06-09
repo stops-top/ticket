@@ -13,9 +13,9 @@ class HDNode:
         fingerprint: int,
         child_num: int,
         chain_code: bytes,
-        private_key: bytes = None,
-        public_key: bytes = None,
-        curve_name: str = None,
+        private_key: bytes | None = None,
+        public_key: bytes | None = None,
+        curve_name: str | None = None,
     ) -> None:
         """
         """

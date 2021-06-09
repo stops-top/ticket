@@ -2,31 +2,35 @@ import ubinascii
 
 from trezor import ui, utils
 from trezor.crypto import random
-from trezor.messages import BackupType, ButtonRequestType
+from trezor.enums import BackupType, ButtonRequestType
 from trezor.ui.components.tt.button import Button, ButtonDefault
 from trezor.ui.components.tt.checklist import Checklist
 from trezor.ui.components.tt.info import InfoConfirm
 from trezor.ui.components.tt.num_input import NumInput
 from trezor.ui.components.tt.scroll import Paginated
 from trezor.ui.components.tt.text import Text
-from trezor.ui.layouts import require, show_success
+from trezor.ui.layouts import confirm_action, confirm_hex, show_success, show_warning
 
-from apps.common.confirm import confirm, require_confirm, require_hold_to_confirm
+from apps.common.confirm import confirm, require_hold_to_confirm
 
 if False:
     from trezor import loop
-    from typing import List, Tuple
 
 if __debug__:
     from apps import debug
 
 
 async def show_internal_entropy(ctx, entropy: bytes):
-    entropy_str = ubinascii.hexlify(entropy).decode()
-    lines = utils.chunks(entropy_str, 16)
-    text = Text("Internal entropy", ui.ICON_RESET)
-    text.mono(*lines)
-    await require_confirm(ctx, text, ButtonRequestType.ResetDevice)
+    await confirm_hex(
+        ctx,
+        "entropy",
+        "Internal entropy",
+        data=ubinascii.hexlify(entropy).decode(),
+        icon=ui.ICON_RESET,
+        icon_color=ui.ORANGE_ICON,
+        width=16,
+        br_code=ButtonRequestType.ResetDevice,
+    )
 
 
 async def _show_share_words(ctx, share_words, share_index=None, group_index=None):
@@ -179,49 +183,45 @@ async def _show_confirmation_success(
             )
             text = "Continue with the next\nshare."
 
-    return await require(
-        show_success(ctx, "success_recovery", text, subheader=subheader)
-    )
+    return await show_success(ctx, "success_recovery", text, subheader=subheader)
 
 
 async def _show_confirmation_failure(ctx, share_index):
     if share_index is None:
-        text = Text("Recovery seed", ui.ICON_WRONG, ui.RED)
+        header = "Recovery seed"
     else:
-        text = Text("Recovery share #%s" % (share_index + 1), ui.ICON_WRONG, ui.RED)
-    text.bold("That is the wrong word.")
-    text.normal("Please check again.")
-    await require_confirm(
-        ctx, text, ButtonRequestType.ResetDevice, confirm="Check again", cancel=None
+        header = "Recovery share #%s" % (share_index + 1)
+    await show_warning(
+        ctx,
+        "warning_backup_check",
+        header=header,
+        subheader="That is the wrong word.",
+        content="Please check again.",
+        button="Check again",
+        br_code=ButtonRequestType.ResetDevice,
     )
 
 
 async def show_backup_warning(ctx, slip39=False):
-    text = Text("Caution", ui.ICON_NOCOPY)
     if slip39:
-        text.normal(
-            "Never make a digital",
-            "copy of your recovery",
-            "shares and never upload",
-            "them online!",
-        )
+        description = "Never make a digital copy of your recovery shares and never upload them online!"
     else:
-        text.normal(
-            "Never make a digital",
-            "copy of your recovery",
-            "seed and never upload",
-            "it online!",
-        )
-    await require_confirm(
-        ctx, text, ButtonRequestType.ResetDevice, "I understand", cancel=None
+        description = "Never make a digital copy of your recovery seed and never upload\nit online!"
+    await confirm_action(
+        ctx,
+        "backup_warning",
+        "Caution",
+        description=description,
+        verb="I understand",
+        verb_cancel=None,
+        icon=ui.ICON_NOCOPY,
+        br_code=ButtonRequestType.ResetDevice,
     )
 
 
 async def show_backup_success(ctx):
     text = "Use your backup\nwhen you need to\nrecover your wallet."
-    await require(
-        show_success(ctx, "success_backup", text, subheader="Your backup is done.")
-    )
+    await show_success(ctx, "success_backup", text, subheader="Your backup is done.")
 
 
 # BIP39
@@ -595,8 +595,8 @@ class MnemonicWordSelect(ui.Layout):
 
     if __debug__:
 
-        def read_content(self) -> List[str]:
+        def read_content(self) -> list[str]:
             return self.text.read_content() + [b.text for b in self.buttons]
 
-        def create_tasks(self) -> Tuple[loop.Task, ...]:
+        def create_tasks(self) -> tuple[loop.Task, ...]:
             return super().create_tasks() + (debug.input_signal(),)

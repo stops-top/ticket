@@ -1,7 +1,7 @@
-import pytest
-import re
 from hashlib import sha256
 from io import BytesIO
+
+import pytest
 
 from trezorlib import btc, messages, tools
 from trezorlib.exceptions import TrezorFailure
@@ -62,10 +62,7 @@ def hash_tx(data: bytes) -> bytes:
 def _check_error_message(value: bytes, model: str, message: str):
     if model != "1":
         if value is None:
-            assert re.match(
-                r"^Failed to decode message: Required field '\w+' was not received$",
-                message,
-            )
+            assert message == "Failed to decode message: Missing"
         else:
             assert message == "Provided prev_hash is invalid."
         return

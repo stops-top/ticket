@@ -1,21 +1,16 @@
 from ustruct import pack, unpack
 
-from trezor import ui, wire
+from trezor import wire
 from trezor.crypto.hashlib import sha256
-from trezor.messages.SignedIdentity import SignedIdentity
-from trezor.ui.components.tt.text import Text
-from trezor.utils import chunks
+from trezor.messages import SignedIdentity
+from trezor.ui.layouts import confirm_sign_identity
 
 from apps.common import HARDENED, coininfo
-from apps.common.confirm import require_confirm
 from apps.common.keychain import get_keychain
 from apps.common.paths import AlwaysMatchingSchema
 
 if False:
-    from trezor.messages.IdentityType import IdentityType
-    from trezor.messages.SignIdentity import SignIdentity
-    from trezor.ui.components.common.text import TextContent
-    from typing import List, Optional, Union
+    from trezor.messages import IdentityType, SignIdentity
 
     from apps.common.paths import Bip32Path
 
@@ -38,7 +33,7 @@ async def sign_identity(ctx: wire.Context, msg: SignIdentity) -> SignedIdentity:
     coin = coininfo.by_name("Bitcoin")
     if msg.ecdsa_curve_name == "secp256k1":
         # hardcoded bitcoin address type
-        address: Optional[str] = node.address(coin.address_type)
+        address: str | None = node.address(coin.address_type)
     else:
         address = None
     pubkey = node.public_key()
@@ -83,19 +78,12 @@ async def sign_identity(ctx: wire.Context, msg: SignIdentity) -> SignedIdentity:
 
 
 async def require_confirm_sign_identity(
-    ctx: wire.Context, identity: IdentityType, challenge_visual: Optional[str]
+    ctx: wire.Context, identity: IdentityType, challenge_visual: str | None
 ) -> None:
-    lines: List[TextContent] = []
-    if challenge_visual:
-        lines.append(challenge_visual)
-
-    lines.append(ui.MONO)
-    lines.extend(chunks(serialize_identity_without_proto(identity), 18))
-
     proto = identity.proto.upper() if identity.proto else "identity"
-    text = Text("Sign %s" % proto)
-    text.normal(*lines)
-    await require_confirm(ctx, text)
+    await confirm_sign_identity(
+        ctx, proto, serialize_identity_without_proto(identity), challenge_visual
+    )
 
 
 def serialize_identity(identity: IdentityType) -> str:
@@ -133,7 +121,7 @@ def sign_challenge(
     seckey: bytes,
     challenge_hidden: bytes,
     challenge_visual: str,
-    sigtype: Union[str, coininfo.CoinInfo],
+    sigtype: str | coininfo.CoinInfo,
     curve: str,
 ) -> bytes:
     from trezor.crypto.hashlib import sha256

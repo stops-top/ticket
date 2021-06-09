@@ -1,9 +1,7 @@
 from micropython import const
 
 from trezor import wire
-from trezor.messages.PrevTx import PrevTx
-from trezor.messages.SignTx import SignTx
-from trezor.messages.TxInput import TxInput
+from trezor.messages import PrevTx, SignTx, TxInput
 
 from apps.common.writers import write_bitcoin_varint
 
@@ -13,8 +11,6 @@ from . import helpers
 from .bitcoin import Bitcoin
 
 if False:
-    from typing import List, Optional, Union
-
     from .tx_info import OriginalTxInfo, TxInfo
 
 _SIGHASH_FORKID = const(0x40)
@@ -47,11 +43,11 @@ class Bitcoinlike(Bitcoin):
         self,
         i: int,
         txi: TxInput,
-        tx_info: Union[TxInfo, OriginalTxInfo],
-        public_keys: List[bytes],
+        tx_info: TxInfo | OriginalTxInfo,
+        public_keys: list[bytes],
         threshold: int,
         script_pubkey: bytes,
-        tx_hash: Optional[bytes] = None,
+        tx_hash: bytes | None = None,
     ) -> bytes:
         if self.coin.force_bip143:
             return tx_info.hash143.preimage_hash(
@@ -76,7 +72,7 @@ class Bitcoinlike(Bitcoin):
     def write_tx_header(
         self,
         w: writers.Writer,
-        tx: Union[SignTx, PrevTx],
+        tx: SignTx | PrevTx,
         witness_marker: bool,
     ) -> None:
         writers.write_uint32(w, tx.version)  # nVersion

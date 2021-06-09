@@ -2,8 +2,9 @@
 import ctypes
 import json
 import os
-import pytest
 from binascii import hexlify, unhexlify
+
+import pytest
 from pyasn1.codec.ber.decoder import decode as ber_decode
 from pyasn1.codec.der.decoder import decode as der_decode
 from pyasn1.codec.der.encoder import encode as der_encode

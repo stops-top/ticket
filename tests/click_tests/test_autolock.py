@@ -14,8 +14,9 @@
 # You should have received a copy of the License along with this library.
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
-import pytest
 import time
+
+import pytest
 
 from trezorlib import btc, device, exceptions, messages
 from trezorlib.tools import parse_path
@@ -45,7 +46,7 @@ def set_autolock_delay(device_handler, delay_ms):
     debug.input("1234")
 
     layout = debug.wait_layout()
-    assert f"auto-lock your device after {delay_ms // 1000} seconds" in layout.text
+    assert f"auto-lock your device after  {delay_ms // 1000} seconds" in layout.text
     debug.click(buttons.OK)
 
     layout = debug.wait_layout()

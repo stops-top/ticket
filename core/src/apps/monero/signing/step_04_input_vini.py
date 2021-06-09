@@ -10,10 +10,8 @@ from apps.monero.xmr import crypto
 from .state import State
 
 if False:
-    from trezor.messages.MoneroTransactionInputViniAck import (
+    from trezor.messages import (
         MoneroTransactionInputViniAck,
-    )
-    from trezor.messages.MoneroTransactionSourceEntry import (
         MoneroTransactionSourceEntry,
     )
 
@@ -25,9 +23,7 @@ async def input_vini(
     vini_hmac: bytes,
     orig_idx: int,
 ) -> MoneroTransactionInputViniAck:
-    from trezor.messages.MoneroTransactionInputViniAck import (
-        MoneroTransactionInputViniAck,
-    )
+    from trezor.messages import MoneroTransactionInputViniAck
 
     await confirms.transaction_step(
         state, state.STEP_VINI, state.current_input_index + 1

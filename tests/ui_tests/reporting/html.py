@@ -1,7 +1,8 @@
 import base64
 import filecmp
-from dominate.tags import a, i, img, table, td, th, tr
 from itertools import zip_longest
+
+from dominate.tags import a, i, img, table, td, th, tr
 
 
 def report_links(tests, reports_path):

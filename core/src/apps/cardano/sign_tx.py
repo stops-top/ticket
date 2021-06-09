@@ -1,25 +1,34 @@
 from trezor import log, wire
 from trezor.crypto import hashlib
 from trezor.crypto.curve import ed25519
-from trezor.messages import CardanoAddressType, CardanoCertificateType
-from trezor.messages.CardanoAddressParametersType import CardanoAddressParametersType
-from trezor.messages.CardanoSignedTx import CardanoSignedTx
+from trezor.enums import CardanoAddressType, CardanoCertificateType
+from trezor.messages import (
+    CardanoAddressParametersType,
+    CardanoSignedTx,
+    CardanoSignedTxChunk,
+    CardanoSignedTxChunkAck,
+)
 
 from apps.common import cbor, safety_checks
 from apps.common.paths import validate_path
-from apps.common.seed import remove_ed25519_prefix
 
 from . import seed
 from .address import (
     derive_address_bytes,
     derive_human_readable_address,
     get_address_bytes_unsafe,
+    validate_address_parameters,
     validate_output_address,
+)
+from .auxiliary_data import (
+    get_auxiliary_data_cbor,
+    hash_auxiliary_data,
+    show_auxiliary_data,
+    validate_auxiliary_data,
 )
 from .byron_address import get_address_attributes
 from .certificates import cborize_certificate, validate_certificate
 from .helpers import (
-    INVALID_METADATA,
     INVALID_STAKE_POOL_REGISTRATION_TX_STRUCTURE,
     INVALID_STAKEPOOL_REGISTRATION_TX_INPUTS,
     INVALID_TOKEN_BUNDLE_OUTPUT,
@@ -42,7 +51,7 @@ from .helpers.paths import (
     SCHEMA_STAKING,
     SCHEMA_STAKING_ANY_ACCOUNT,
 )
-from .helpers.utils import to_account_path
+from .helpers.utils import derive_public_key, to_account_path
 from .layout import (
     confirm_certificate,
     confirm_sending,
@@ -64,26 +73,29 @@ from .layout import (
 from .seed import is_byron_path, is_shelley_path
 
 if False:
-    from trezor.messages.CardanoAssetGroupType import CardanoAssetGroupType
-    from trezor.messages.CardanoSignTx import CardanoSignTx
-    from trezor.messages.CardanoTxCertificateType import CardanoTxCertificateType
-    from trezor.messages.CardanoTxInputType import CardanoTxInputType
-    from trezor.messages.CardanoTxOutputType import CardanoTxOutputType
-    from trezor.messages.CardanoTxWithdrawalType import CardanoTxWithdrawalType
-    from typing import Any, Dict, List, Optional, Tuple, Union
+    from typing import Any, Optional, Union
+
+    from trezor.messages import (
+        CardanoAssetGroupType,
+        CardanoSignTx,
+        CardanoTxCertificateType,
+        CardanoTxInputType,
+        CardanoTxOutputType,
+        CardanoTxWithdrawalType,
+    )
 
     from apps.common.cbor import CborSequence
     from apps.common.paths import PathSchema
 
-    CborizedTokenBundle = Dict[bytes, Dict[bytes, int]]
-    CborizedTxOutput = Tuple[bytes, Union[int, Tuple[int, CborizedTokenBundle]]]
+    CborizedTokenBundle = dict[bytes, dict[bytes, int]]
+    CborizedTxOutput = tuple[bytes, Union[int, tuple[int, CborizedTokenBundle]]]
+    CborizedSignedTx = tuple[dict, dict, Optional[cbor.Raw]]
+    TxHash = bytes
 
-
-METADATA_HASH_SIZE = 32
 MINTING_POLICY_ID_LENGTH = 28
-MAX_METADATA_LENGTH = 500
 MAX_ASSET_NAME_LENGTH = 32
-MAX_TX_OUTPUT_SIZE = 512
+MAX_TX_CHUNK_SIZE = 256
+MAX_TX_OUTPUT_SIZE = 4000
 
 
 @seed.with_keychain
@@ -95,44 +107,50 @@ async def sign_tx(
 
     validate_network_info(msg.network_id, msg.protocol_magic)
 
-    if _has_stake_pool_registration(msg):
-        return await _sign_stake_pool_registration_tx(ctx, msg, keychain)
-    else:
-        return await _sign_standard_tx(ctx, msg, keychain)
-
-
-async def _sign_standard_tx(
-    ctx: wire.Context, msg: CardanoSignTx, keychain: seed.Keychain
-) -> CardanoSignedTx:
     try:
-        for i in msg.inputs:
-            await validate_path(
-                ctx, keychain, i.address_n, SCHEMA_ADDRESS.match(i.address_n)
+        if _has_stake_pool_registration(msg):
+            cborized_tx, tx_hash = await _sign_stake_pool_registration_tx(
+                ctx, msg, keychain
             )
+        else:
+            cborized_tx, tx_hash = await _sign_ordinary_tx(ctx, msg, keychain)
 
-        _validate_outputs(keychain, msg.outputs, msg.protocol_magic, msg.network_id)
-        _validate_certificates(msg.certificates, msg.protocol_magic, msg.network_id)
-        _validate_withdrawals(msg.withdrawals)
-        _validate_metadata(msg.metadata)
+        signed_tx_chunks = cbor.encode_chunked(cborized_tx, MAX_TX_CHUNK_SIZE)
 
-        # display the transaction in UI
-        await _show_standard_tx(ctx, keychain, msg)
+        for signed_tx_chunk in signed_tx_chunks:
+            response = CardanoSignedTxChunk(signed_tx_chunk=signed_tx_chunk)
+            await ctx.call(response, CardanoSignedTxChunkAck)
 
-        # sign the transaction bundle and prepare the result
-        serialized_tx, tx_hash = _serialize_tx(keychain, msg)
-        tx = CardanoSignedTx(serialized_tx=serialized_tx, tx_hash=tx_hash)
+        return CardanoSignedTx(tx_hash=tx_hash, serialized_tx=None)
 
     except ValueError as e:
         if __debug__:
             log.exception(__name__, e)
         raise wire.ProcessError("Signing failed")
 
-    return tx
+
+async def _sign_ordinary_tx(
+    ctx: wire.Context, msg: CardanoSignTx, keychain: seed.Keychain
+) -> tuple[CborizedSignedTx, TxHash]:
+    for i in msg.inputs:
+        await validate_path(
+            ctx, keychain, i.address_n, SCHEMA_ADDRESS.match(i.address_n)
+        )
+
+    _validate_outputs(keychain, msg.outputs, msg.protocol_magic, msg.network_id)
+    _validate_certificates(msg.certificates, msg.protocol_magic, msg.network_id)
+    _validate_withdrawals(msg.withdrawals)
+    validate_auxiliary_data(msg.auxiliary_data)
+
+    # display the transaction in UI
+    await _show_standard_tx(ctx, keychain, msg)
+
+    return _cborize_signed_tx(keychain, msg)
 
 
 async def _sign_stake_pool_registration_tx(
     ctx: wire.Context, msg: CardanoSignTx, keychain: seed.Keychain
-) -> CardanoSignedTx:
+) -> tuple[CborizedSignedTx, TxHash]:
     """
     We have a separate tx signing flow for stake pool registration because it's a
     transaction where the witnessable entries (i.e. inputs, withdrawals, etc.)
@@ -145,26 +163,16 @@ async def _sign_stake_pool_registration_tx(
     except the stake pool certificate itself and we provide a witness only to the
     user's staking key in the list of pool owners.
     """
-    try:
-        _validate_stake_pool_registration_tx_structure(msg)
+    _validate_stake_pool_registration_tx_structure(msg)
 
-        _ensure_no_signing_inputs(msg.inputs)
-        _validate_outputs(keychain, msg.outputs, msg.protocol_magic, msg.network_id)
-        _validate_certificates(msg.certificates, msg.protocol_magic, msg.network_id)
-        _validate_metadata(msg.metadata)
+    _ensure_no_signing_inputs(msg.inputs)
+    _validate_outputs(keychain, msg.outputs, msg.protocol_magic, msg.network_id)
+    _validate_certificates(msg.certificates, msg.protocol_magic, msg.network_id)
+    validate_auxiliary_data(msg.auxiliary_data)
 
-        await _show_stake_pool_registration_tx(ctx, keychain, msg)
+    await _show_stake_pool_registration_tx(ctx, keychain, msg)
 
-        # sign the transaction bundle and prepare the result
-        serialized_tx, tx_hash = _serialize_tx(keychain, msg)
-        tx = CardanoSignedTx(serialized_tx=serialized_tx, tx_hash=tx_hash)
-
-    except ValueError as e:
-        if __debug__:
-            log.exception(__name__, e)
-        raise wire.ProcessError("Signing failed")
-
-    return tx
+    return _cborize_signed_tx(keychain, msg)
 
 
 def _has_stake_pool_registration(msg: CardanoSignTx) -> bool:
@@ -200,18 +208,21 @@ def _validate_stake_pool_registration_tx_structure(msg: CardanoSignTx) -> None:
 
 def _validate_outputs(
     keychain: seed.Keychain,
-    outputs: List[CardanoTxOutputType],
+    outputs: list[CardanoTxOutputType],
     protocol_magic: int,
     network_id: int,
 ) -> None:
     total_amount = 0
     for output in outputs:
         total_amount += output.amount
-        if output.address_parameters:
-            # try to derive the address to validate it
-            derive_address_bytes(
-                keychain, output.address_parameters, protocol_magic, network_id
+
+        if output.address_parameters and output.address is not None:
+            raise wire.ProcessError(
+                "Outputs can not contain both address and address_parameters fields!"
             )
+
+        if output.address_parameters:
+            validate_address_parameters(output.address_parameters)
         elif output.address is not None:
             validate_output_address(output.address, protocol_magic, network_id)
         else:
@@ -226,7 +237,38 @@ def _validate_outputs(
         raise wire.ProcessError("Total transaction amount is out of range!")
 
 
-def _validate_token_bundle(token_bundle: List[CardanoAssetGroupType]) -> None:
+def _validate_max_tx_output_size(
+    keychain: seed.Keychain,
+    output: CardanoTxOutputType,
+    protocol_magic: int,
+    network_id: int,
+) -> None:
+    """
+    Output value size is currently limited to 4000 bytes at protocol level. Given
+    the maximum transaction size Trezor can handle (~9kB), we also want to enforce
+    this size limit here so that when the limit is raised at protocol level again,
+    Trezor would still not be able to produce larger outputs than it could
+    reliably spend. Once Cardano-transaction signing is refactored to be completely
+    streamed and maximum supported transaction size is thus raised, this limit can be lifted.
+    """
+    cborized_output = _cborize_output(keychain, output, protocol_magic, network_id)
+
+    assert len(cborized_output) == 2
+    # only the output value is used for counting the size in cardano-ledger-specs
+    cborized_output_value = cborized_output[1]
+    serialized_output_chunks = cbor.encode_streamed(cborized_output_value)
+
+    serialized_output_size = 0
+    for chunk in serialized_output_chunks:
+        serialized_output_size += len(chunk)
+
+    if serialized_output_size > MAX_TX_OUTPUT_SIZE:
+        raise wire.ProcessError(
+            "Maximum tx output value size (%s bytes) exceeded!" % MAX_TX_OUTPUT_SIZE
+        )
+
+
+def _validate_token_bundle(token_bundle: list[CardanoAssetGroupType]) -> None:
     seen_policy_ids = set()
     for token_group in token_bundle:
         policy_id = bytes(token_group.policy_id)
@@ -254,42 +296,19 @@ def _validate_token_bundle(token_bundle: List[CardanoAssetGroupType]) -> None:
                 seen_asset_name_bytes.add(asset_name_bytes)
 
 
-def _validate_max_tx_output_size(
-    keychain: seed.Keychain,
-    output: CardanoTxOutputType,
-    protocol_magic: int,
-    network_id: int,
-) -> None:
-    """
-    This limitation is a mitigation measure to prevent sending
-    large (especially change) outputs containing many tokens that Trezor
-    would not be able to spend reliably given that
-    currently the full Cardano transaction is held in-memory.
-    Once Cardano-transaction signing is refactored to be streamed, this
-    limit can be lifted
-    """
-    cborized_output = _cborize_output(keychain, output, protocol_magic, network_id)
-    serialized_output = cbor.encode(cborized_output)
-
-    if len(serialized_output) > MAX_TX_OUTPUT_SIZE:
-        raise wire.ProcessError(
-            "Maximum tx output size (%s bytes) exceeded!" % MAX_TX_OUTPUT_SIZE
-        )
-
-
-def _ensure_no_signing_inputs(inputs: List[CardanoTxInputType]) -> None:
+def _ensure_no_signing_inputs(inputs: list[CardanoTxInputType]) -> None:
     if any(i.address_n for i in inputs):
         raise INVALID_STAKEPOOL_REGISTRATION_TX_INPUTS
 
 
 def _validate_certificates(
-    certificates: List[CardanoTxCertificateType], protocol_magic: int, network_id: int
+    certificates: list[CardanoTxCertificateType], protocol_magic: int, network_id: int
 ) -> None:
     for certificate in certificates:
         validate_certificate(certificate, protocol_magic, network_id)
 
 
-def _validate_withdrawals(withdrawals: List[CardanoTxWithdrawalType]) -> None:
+def _validate_withdrawals(withdrawals: list[CardanoTxWithdrawalType]) -> None:
     for withdrawal in withdrawals:
         if not SCHEMA_STAKING_ANY_ACCOUNT.match(withdrawal.path):
             raise INVALID_WITHDRAWAL
@@ -298,24 +317,9 @@ def _validate_withdrawals(withdrawals: List[CardanoTxWithdrawalType]) -> None:
             raise INVALID_WITHDRAWAL
 
 
-def _validate_metadata(metadata: Optional[bytes]) -> None:
-    if not metadata:
-        return
-
-    if len(metadata) > MAX_METADATA_LENGTH:
-        raise INVALID_METADATA
-
-    try:
-        # this also raises an error if there's some data remaining
-        decoded = cbor.decode(metadata)
-    except Exception:
-        raise INVALID_METADATA
-
-    if not isinstance(decoded, dict):
-        raise INVALID_METADATA
-
-
-def _serialize_tx(keychain: seed.Keychain, msg: CardanoSignTx) -> Tuple[bytes, bytes]:
+def _cborize_signed_tx(
+    keychain: seed.Keychain, msg: CardanoSignTx
+) -> tuple[CborizedSignedTx, TxHash]:
     tx_body = _cborize_tx_body(keychain, msg)
     tx_hash = _hash_tx_body(tx_body)
 
@@ -328,16 +332,17 @@ def _serialize_tx(keychain: seed.Keychain, msg: CardanoSignTx) -> Tuple[bytes, b
         msg.protocol_magic,
     )
 
-    metadata = None
-    if msg.metadata:
-        metadata = cbor.Raw(bytes(msg.metadata))
+    auxiliary_data = None
+    if msg.auxiliary_data:
+        auxiliary_data_cbor = get_auxiliary_data_cbor(
+            keychain, msg.auxiliary_data, msg.protocol_magic, msg.network_id
+        )
+        auxiliary_data = cbor.Raw(auxiliary_data_cbor)
 
-    serialized_tx = cbor.encode([tx_body, witnesses, metadata])
-
-    return serialized_tx, tx_hash
+    return (tx_body, witnesses, auxiliary_data), tx_hash
 
 
-def _cborize_tx_body(keychain: seed.Keychain, msg: CardanoSignTx) -> Dict:
+def _cborize_tx_body(keychain: seed.Keychain, msg: CardanoSignTx) -> dict:
     inputs_for_cbor = _cborize_inputs(msg.inputs)
     outputs_for_cbor = _cborize_outputs(
         keychain, msg.outputs, msg.protocol_magic, msg.network_id
@@ -364,8 +369,11 @@ def _cborize_tx_body(keychain: seed.Keychain, msg: CardanoSignTx) -> Dict:
 
     # tx_body[6] is for protocol updates, which we don't support
 
-    if msg.metadata:
-        tx_body[7] = _hash_metadata(bytes(msg.metadata))
+    if msg.auxiliary_data:
+        auxiliary_data_cbor = get_auxiliary_data_cbor(
+            keychain, msg.auxiliary_data, msg.protocol_magic, msg.network_id
+        )
+        tx_body[7] = hash_auxiliary_data(bytes(auxiliary_data_cbor))
 
     if msg.validity_interval_start:
         tx_body[8] = msg.validity_interval_start
@@ -373,16 +381,16 @@ def _cborize_tx_body(keychain: seed.Keychain, msg: CardanoSignTx) -> Dict:
     return tx_body
 
 
-def _cborize_inputs(inputs: List[CardanoTxInputType]) -> List[Tuple[bytes, int]]:
+def _cborize_inputs(inputs: list[CardanoTxInputType]) -> list[tuple[bytes, int]]:
     return [(tx_input.prev_hash, tx_input.prev_index) for tx_input in inputs]
 
 
 def _cborize_outputs(
     keychain: seed.Keychain,
-    outputs: List[CardanoTxOutputType],
+    outputs: list[CardanoTxOutputType],
     protocol_magic: int,
     network_id: int,
-) -> List[CborizedTxOutput]:
+) -> list[CborizedTxOutput]:
     return [
         _cborize_output(keychain, output, protocol_magic, network_id)
         for output in outputs
@@ -411,7 +419,7 @@ def _cborize_output(
 
 
 def _cborize_token_bundle(
-    token_bundle: List[CardanoAssetGroupType],
+    token_bundle: list[CardanoAssetGroupType],
 ) -> CborizedTokenBundle:
     result: CborizedTokenBundle = {}
 
@@ -428,17 +436,17 @@ def _cborize_token_bundle(
 
 def _cborize_certificates(
     keychain: seed.Keychain,
-    certificates: List[CardanoTxCertificateType],
-) -> List[CborSequence]:
+    certificates: list[CardanoTxCertificateType],
+) -> list[CborSequence]:
     return [cborize_certificate(keychain, cert) for cert in certificates]
 
 
 def _cborize_withdrawals(
     keychain: seed.Keychain,
-    withdrawals: List[CardanoTxWithdrawalType],
+    withdrawals: list[CardanoTxWithdrawalType],
     protocol_magic: int,
     network_id: int,
-) -> Dict[bytes, int]:
+) -> dict[bytes, int]:
     result = {}
     for withdrawal in withdrawals:
         reward_address = derive_address_bytes(
@@ -456,23 +464,24 @@ def _cborize_withdrawals(
     return result
 
 
-def _hash_metadata(metadata: bytes) -> bytes:
-    return hashlib.blake2b(data=metadata, outlen=METADATA_HASH_SIZE).digest()
+def _hash_tx_body(tx_body: dict) -> bytes:
+    tx_body_cbor_chunks = cbor.encode_streamed(tx_body)
 
+    hashfn = hashlib.blake2b(outlen=32)
+    for chunk in tx_body_cbor_chunks:
+        hashfn.update(chunk)
 
-def _hash_tx_body(tx_body: Dict) -> bytes:
-    tx_body_cbor = cbor.encode(tx_body)
-    return hashlib.blake2b(data=tx_body_cbor, outlen=32).digest()
+    return hashfn.digest()
 
 
 def _cborize_witnesses(
     keychain: seed.Keychain,
-    inputs: List[CardanoTxInputType],
-    certificates: List[CardanoTxCertificateType],
-    withdrawals: List[CardanoTxWithdrawalType],
+    inputs: list[CardanoTxInputType],
+    certificates: list[CardanoTxCertificateType],
+    withdrawals: list[CardanoTxWithdrawalType],
     tx_body_hash: bytes,
     protocol_magic: int,
-) -> Dict:
+) -> dict:
     shelley_witnesses = _cborize_shelley_witnesses(
         keychain, inputs, certificates, withdrawals, tx_body_hash
     )
@@ -482,7 +491,7 @@ def _cborize_witnesses(
 
     # use key 0 for shelley witnesses and key 2 for byron witnesses
     # according to the spec in shelley.cddl in cardano-ledger-specs
-    witnesses: Dict[Any, Any] = {}
+    witnesses: dict[Any, Any] = {}
     if shelley_witnesses:
         witnesses[0] = shelley_witnesses
     if byron_witnesses:
@@ -493,11 +502,11 @@ def _cborize_witnesses(
 
 def _cborize_shelley_witnesses(
     keychain: seed.Keychain,
-    inputs: List[CardanoTxInputType],
-    certificates: List[CardanoTxCertificateType],
-    withdrawals: List[CardanoTxWithdrawalType],
+    inputs: list[CardanoTxInputType],
+    certificates: list[CardanoTxCertificateType],
+    withdrawals: list[CardanoTxWithdrawalType],
     tx_body_hash: bytes,
-) -> List[Tuple[bytes, bytes]]:
+) -> list[tuple[bytes, bytes]]:
     shelley_witnesses = []
 
     # include only one witness for each path
@@ -524,28 +533,30 @@ def _cborize_shelley_witnesses(
         witness = _cborize_shelley_witness(keychain, tx_body_hash, list(path))
         shelley_witnesses.append(witness)
 
+    shelley_witnesses.sort()
+
     return shelley_witnesses
 
 
 def _cborize_shelley_witness(
-    keychain: seed.Keychain, tx_body_hash: bytes, path: List[int]
-) -> Tuple[bytes, bytes]:
+    keychain: seed.Keychain, tx_body_hash: bytes, path: list[int]
+) -> tuple[bytes, bytes]:
     node = keychain.derive(path)
 
     signature = ed25519.sign_ext(
         node.private_key(), node.private_key_ext(), tx_body_hash
     )
-    public_key = remove_ed25519_prefix(node.public_key())
+    public_key = derive_public_key(keychain, path)
 
     return public_key, signature
 
 
 def _cborize_byron_witnesses(
     keychain: seed.Keychain,
-    inputs: List[CardanoTxInputType],
+    inputs: list[CardanoTxInputType],
     tx_body_hash: bytes,
     protocol_magic: int,
-) -> List[Tuple[bytes, bytes, bytes, bytes]]:
+) -> list[tuple[bytes, bytes, bytes, bytes]]:
     byron_witnesses = []
 
     # include only one witness for each path
@@ -557,7 +568,7 @@ def _cborize_byron_witnesses(
     for path in paths:
         node = keychain.derive(list(path))
 
-        public_key = remove_ed25519_prefix(node.public_key())
+        public_key = derive_public_key(keychain, list(path))
         signature = ed25519.sign_ext(
             node.private_key(), node.private_key_ext(), tx_body_hash
         )
@@ -565,6 +576,8 @@ def _cborize_byron_witnesses(
         address_attributes = cbor.encode(get_address_attributes(protocol_magic))
 
         byron_witnesses.append((public_key, signature, chain_code, address_attributes))
+
+    byron_witnesses.sort()
 
     return byron_witnesses
 
@@ -588,7 +601,10 @@ async def _show_standard_tx(
     for withdrawal in msg.withdrawals:
         await confirm_withdrawal(ctx, withdrawal)
 
-    has_metadata = bool(msg.metadata)
+    await show_auxiliary_data(
+        ctx, keychain, msg.auxiliary_data, msg.protocol_magic, msg.network_id
+    )
+
     await confirm_transaction(
         ctx=ctx,
         amount=total_amount,
@@ -596,7 +612,6 @@ async def _show_standard_tx(
         protocol_magic=msg.protocol_magic,
         ttl=msg.ttl,
         validity_interval_start=msg.validity_interval_start,
-        has_metadata=has_metadata,
         is_network_id_verifiable=is_network_id_verifiable,
     )
 
@@ -630,6 +645,9 @@ async def _show_stake_pool_registration_tx(
     await confirm_stake_pool_metadata(ctx, pool_parameters.metadata)
     await confirm_transaction_network_ttl(
         ctx, msg.protocol_magic, msg.ttl, msg.validity_interval_start
+    )
+    await show_auxiliary_data(
+        ctx, keychain, msg.auxiliary_data, msg.protocol_magic, msg.network_id
     )
     await confirm_stake_pool_registration_final(ctx)
 
@@ -719,7 +737,7 @@ async def _show_change_output_staking_warnings(
 
 
 # addresses from the same account as inputs should be hidden
-def _should_hide_output(output: List[int], inputs: List[CardanoTxInputType]) -> bool:
+def _should_hide_output(output: list[int], inputs: list[CardanoTxInputType]) -> bool:
     for tx_input in inputs:
         inp = tx_input.address_n
         if (
@@ -747,7 +765,7 @@ def _is_network_id_verifiable(msg: CardanoSignTx) -> bool:
 
 
 async def _fail_or_warn_if_invalid_path(
-    ctx: wire.Context, schema: PathSchema, path: List[int], path_name: str
+    ctx: wire.Context, schema: PathSchema, path: list[int], path_name: str
 ) -> None:
     if not schema.match(path):
         if safety_checks.is_strict():

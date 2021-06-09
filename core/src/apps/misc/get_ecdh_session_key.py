@@ -1,21 +1,18 @@
 from ustruct import pack, unpack
 
-from trezor import wire
+from trezor import ui, wire
 from trezor.crypto.hashlib import sha256
-from trezor.messages.ECDHSessionKey import ECDHSessionKey
-from trezor.ui.components.tt.text import Text
-from trezor.utils import chunks
+from trezor.messages import ECDHSessionKey
+from trezor.ui.layouts import confirm_hex
 
 from apps.common import HARDENED
-from apps.common.confirm import require_confirm
 from apps.common.keychain import get_keychain
 from apps.common.paths import AlwaysMatchingSchema
 
 from .sign_identity import serialize_identity, serialize_identity_without_proto
 
 if False:
-    from trezor.messages.GetECDHSessionKey import GetECDHSessionKey
-    from trezor.messages.IdentityType import IdentityType
+    from trezor.messages import GetECDHSessionKey, IdentityType
 
     from apps.common.paths import Bip32Path
 
@@ -48,11 +45,15 @@ async def get_ecdh_session_key(
 async def require_confirm_ecdh_session_key(
     ctx: wire.Context, identity: IdentityType
 ) -> None:
-    lines = chunks(serialize_identity_without_proto(identity), 18)
     proto = identity.proto.upper() if identity.proto else "identity"
-    text = Text("Decrypt %s" % proto)
-    text.mono(*lines)
-    await require_confirm(ctx, text)
+    await confirm_hex(
+        ctx,
+        "ecdh_session_key",
+        "Decrypt %s" % proto,
+        serialize_identity_without_proto(identity),
+        icon=ui.ICON_DEFAULT,
+        icon_color=ui.ORANGE_ICON,
+    )
 
 
 def get_ecdh_path(identity: str, index: int) -> Bip32Path:

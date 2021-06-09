@@ -2,7 +2,7 @@ from micropython import const
 from ubinascii import hexlify
 
 from trezor import ui
-from trezor.messages import ButtonRequestType
+from trezor.enums import ButtonRequestType
 from trezor.ui.components.tt.scroll import Paginated
 from trezor.ui.components.tt.text import Text
 from trezor.utils import chunks
@@ -12,22 +12,23 @@ from ..layout import require_confirm
 
 if False:
     from trezor import wire
-    from trezor.messages.EosActionBuyRam import EosActionBuyRam
-    from trezor.messages.EosActionBuyRamBytes import EosActionBuyRamBytes
-    from trezor.messages.EosActionCommon import EosActionCommon
-    from trezor.messages.EosActionDelegate import EosActionDelegate
-    from trezor.messages.EosActionDeleteAuth import EosActionDeleteAuth
-    from trezor.messages.EosActionLinkAuth import EosActionLinkAuth
-    from trezor.messages.EosActionNewAccount import EosActionNewAccount
-    from trezor.messages.EosActionRefund import EosActionRefund
-    from trezor.messages.EosActionSellRam import EosActionSellRam
-    from trezor.messages.EosActionTransfer import EosActionTransfer
-    from trezor.messages.EosActionUndelegate import EosActionUndelegate
-    from trezor.messages.EosActionUnlinkAuth import EosActionUnlinkAuth
-    from trezor.messages.EosActionUpdateAuth import EosActionUpdateAuth
-    from trezor.messages.EosActionVoteProducer import EosActionVoteProducer
-    from trezor.messages.EosAuthorization import EosAuthorization
-    from typing import List
+    from trezor.messages import (
+        EosActionBuyRam,
+        EosActionBuyRamBytes,
+        EosActionCommon,
+        EosActionDelegate,
+        EosActionDeleteAuth,
+        EosActionLinkAuth,
+        EosActionNewAccount,
+        EosActionRefund,
+        EosActionSellRam,
+        EosActionTransfer,
+        EosActionUndelegate,
+        EosActionUnlinkAuth,
+        EosActionUpdateAuth,
+        EosActionVoteProducer,
+        EosAuthorization,
+    )
 
 _LINE_LENGTH = const(17)
 _LINE_PLACEHOLDER = "{:<" + str(_LINE_LENGTH) + "}"
@@ -39,7 +40,7 @@ _FIVE_FIELDS_PER_PAGE = const(5)
 
 
 async def _require_confirm_paginated(
-    ctx: wire.Context, header: str, fields: List[str], per_page: int
+    ctx: wire.Context, header: str, fields: list[str], per_page: int
 ) -> None:
     pages = []
     for page in chunks(fields, per_page):
@@ -265,7 +266,7 @@ async def confirm_action_unknown(
     await _require_confirm_paginated(ctx, text, fields, _FIVE_FIELDS_PER_PAGE)
 
 
-def authorization_fields(auth: EosAuthorization) -> List[str]:
+def authorization_fields(auth: EosAuthorization) -> list[str]:
     fields = []
 
     fields.append("Threshold:")
@@ -311,7 +312,7 @@ def authorization_fields(auth: EosAuthorization) -> List[str]:
     return fields
 
 
-def split_data(data: str) -> List[str]:
+def split_data(data: str) -> list[str]:
     lines = []
     while data:
         lines.append("{} ".format(data[:_LINE_LENGTH]))

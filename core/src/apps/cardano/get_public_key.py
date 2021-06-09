@@ -1,19 +1,17 @@
 from ubinascii import hexlify
 
 from trezor import log, wire
-from trezor.messages.CardanoPublicKey import CardanoPublicKey
-from trezor.messages.HDNodeType import HDNodeType
-from trezor.ui.layouts import require, show_pubkey
+from trezor.messages import CardanoPublicKey, HDNodeType
+from trezor.ui.layouts import show_pubkey
 
 from apps.common import paths
-from apps.common.seed import remove_ed25519_prefix
 
 from . import seed
 from .helpers.paths import SCHEMA_PUBKEY
+from .helpers.utils import derive_public_key
 
 if False:
-    from trezor.messages.CardanoGetPublicKey import CardanoGetPublicKey
-    from typing import List
+    from trezor.messages import CardanoGetPublicKey
 
 
 @seed.with_keychain
@@ -36,16 +34,16 @@ async def get_public_key(
         raise wire.ProcessError("Deriving public key failed")
 
     if msg.show_display:
-        await require(show_pubkey(ctx, hexlify(key.node.public_key).decode()))
+        await show_pubkey(ctx, hexlify(key.node.public_key).decode())
     return key
 
 
 def _get_public_key(
-    keychain: seed.Keychain, derivation_path: List[int]
+    keychain: seed.Keychain, derivation_path: list[int]
 ) -> CardanoPublicKey:
     node = keychain.derive(derivation_path)
 
-    public_key = hexlify(remove_ed25519_prefix(node.public_key())).decode()
+    public_key = hexlify(derive_public_key(keychain, derivation_path)).decode()
     chain_code = hexlify(node.chain_code()).decode()
     xpub_key = public_key + chain_code
 
@@ -54,7 +52,7 @@ def _get_public_key(
         child_num=node.child_num(),
         fingerprint=node.fingerprint(),
         chain_code=node.chain_code(),
-        public_key=remove_ed25519_prefix(node.public_key()),
+        public_key=derive_public_key(keychain, derivation_path),
     )
 
     return CardanoPublicKey(node=node_type, xpub=xpub_key)

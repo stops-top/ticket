@@ -2,7 +2,6 @@
 import ctypes
 import itertools
 import os
-import pytest
 import random
 from ctypes import (
     c_bool,
@@ -15,6 +14,8 @@ from ctypes import (
     c_uint64,
 )
 from math import floor, log, sqrt
+
+import pytest
 
 dir = os.path.abspath(os.path.dirname(__file__))
 lib = ctypes.cdll.LoadLibrary(os.path.join(dir, "libtrezor-crypto.so"))

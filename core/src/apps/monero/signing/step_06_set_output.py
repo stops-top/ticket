@@ -3,6 +3,7 @@ Output destinations are streamed one by one.
 Computes destination one-time address, amount key, range proof + HMAC, out_pk, ecdh_info.
 """
 import gc
+
 from trezor import utils
 
 from apps.monero import signing
@@ -13,18 +14,14 @@ from apps.monero.xmr import crypto, serialize
 from .state import State
 
 if False:
-    from trezor.messages.MoneroTransactionDestinationEntry import (
-        MoneroTransactionDestinationEntry,
-    )
-    from trezor.messages.MoneroTransactionRsigData import MoneroTransactionRsigData
-    from trezor.messages.MoneroTransactionSetOutputAck import (
-        MoneroTransactionSetOutputAck,
-    )
-    from typing import Tuple
-
+    from apps.monero.xmr.types import Sc25519, Ge25519
     from apps.monero.xmr.serialize_messages.tx_ecdh import EcdhTuple
     from apps.monero.xmr.serialize_messages.tx_rsig_bulletproof import Bulletproof
-    from apps.monero.xmr.types import Ge25519, Sc25519
+    from trezor.messages import (
+        MoneroTransactionDestinationEntry,
+        MoneroTransactionSetOutputAck,
+        MoneroTransactionRsigData,
+    )
 
 
 async def set_output(
@@ -72,9 +69,7 @@ async def set_output(
 
     # If det masks & offloading, return as we are handling offloaded BP.
     if state.is_processing_offloaded:
-        from trezor.messages.MoneroTransactionSetOutputAck import (
-            MoneroTransactionSetOutputAck,
-        )
+        from trezor.messages import MoneroTransactionSetOutputAck
 
         return MoneroTransactionSetOutputAck()
 
@@ -104,9 +99,7 @@ async def set_output(
     state.last_step = state.STEP_OUT
     state.mem_trace(14, True)
 
-    from trezor.messages.MoneroTransactionSetOutputAck import (
-        MoneroTransactionSetOutputAck,
-    )
+    from trezor.messages import MoneroTransactionSetOutputAck
 
     out_pk_bin = bytearray(64)
     utils.memcpy(out_pk_bin, 0, out_pk_dest, 0, 32)
@@ -177,7 +170,7 @@ def _validate(
 
 def _compute_tx_keys(
     state: State, dst_entr: MoneroTransactionDestinationEntry
-) -> Tuple[Ge25519, Sc25519]:
+) -> tuple[Ge25519, Sc25519]:
     """Computes tx_out_key, amount_key"""
 
     if state.is_processing_offloaded:
@@ -206,7 +199,7 @@ def _compute_tx_keys(
 
 def _set_out_tx_out(
     state: State, dst_entr: MoneroTransactionDestinationEntry, tx_out_key: Ge25519
-) -> Tuple[bytes, bytes]:
+) -> tuple[bytes, bytes]:
     """
     Manually serializes TxOut(0, TxoutToKey(key)) and calculates hmac.
     """
@@ -230,7 +223,7 @@ def _set_out_tx_out(
 
 def _range_proof(
     state: State, rsig_data: MoneroTransactionRsigData
-) -> Tuple[MoneroTransactionRsigData, Sc25519]:
+) -> tuple[MoneroTransactionRsigData, Sc25519]:
     """
     Computes rangeproof and handles range proof offloading logic.
 
@@ -398,7 +391,7 @@ def _return_rsig_data(
     if rsig is None and mask is None:
         return None
 
-    from trezor.messages.MoneroTransactionRsigData import MoneroTransactionRsigData
+    from trezor.messages import MoneroTransactionRsigData
 
     rsig_data = MoneroTransactionRsigData()
 
@@ -413,7 +406,7 @@ def _return_rsig_data(
 
 def _get_ecdh_info_and_out_pk(
     state: State, tx_out_key: Ge25519, amount: int, mask: Sc25519, amount_key: Sc25519
-) -> Tuple[bytes, bytes, bytes]:
+) -> tuple[bytes, bytes, bytes]:
     """
     Calculates the Pedersen commitment C = aG + bH and returns it as CtKey.
     Also encodes the two items - `mask` and `amount` - into ecdh info,

@@ -2,10 +2,9 @@ import storage
 import storage.device
 from trezor import config, wire
 from trezor.crypto import bip39, slip39
-from trezor.messages import BackupType
-from trezor.messages.Success import Success
-from trezor.pin import pin_to_int
-from trezor.ui.layouts import confirm_action, require
+from trezor.enums import BackupType
+from trezor.messages import Success
+from trezor.ui.layouts import confirm_action
 
 from apps.management import backup_types
 
@@ -46,7 +45,7 @@ async def load_device(ctx, msg):
     storage.device.set_passphrase_enabled(msg.passphrase_protection)
     storage.device.set_label(msg.label or "")
     if msg.pin:
-        config.change_pin(pin_to_int(""), pin_to_int(msg.pin), None, None)
+        config.change_pin("", msg.pin, None, None)
 
     return Success(message="Device loaded")
 
@@ -69,12 +68,10 @@ def _validate(msg) -> int:
 
 
 async def _warn(ctx: wire.Context):
-    await require(
-        confirm_action(
-            ctx,
-            "warn_loading_seed",
-            "Loading seed",
-            "Loading private seed\nis not recommended.",
-            "Continue only if you\nknow what you are doing!",
-        )
+    await confirm_action(
+        ctx,
+        "warn_loading_seed",
+        "Loading seed",
+        "Loading private seed\nis not recommended.",
+        "Continue only if you\nknow what you are doing!",
     )

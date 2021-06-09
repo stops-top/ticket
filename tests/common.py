@@ -15,8 +15,9 @@
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
 import json
-import pytest
 from pathlib import Path
+
+import pytest
 
 from trezorlib import btc, tools
 from trezorlib.messages import ButtonRequestType as B
@@ -174,7 +175,7 @@ def click_through(debug, screens, code=None):
         debug.press_yes()
 
 
-def read_and_confirm_mnemonic(debug, words):
+def read_and_confirm_mnemonic(debug, words, choose_wrong=False):
     """Read a given number of mnemonic words from Trezor T screen and correctly
     answer confirmation questions. Return the full mnemonic.
 
@@ -200,7 +201,11 @@ def read_and_confirm_mnemonic(debug, words):
     # check share
     for _ in range(3):
         index = debug.read_reset_word_pos()
-        debug.input(mnemonic[index])
+        if choose_wrong:
+            debug.input(mnemonic[(index + 1) % len(mnemonic)])
+            return None
+        else:
+            debug.input(mnemonic[index])
 
     return " ".join(mnemonic)
 

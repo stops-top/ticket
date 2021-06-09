@@ -15,12 +15,13 @@
 # You should have received a copy of the License along with this library.
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
-import click
 import json
-import requests
 import sys
 from decimal import Decimal
 from pathlib import Path
+
+import click
+import requests
 
 from trezorlib import btc, messages, protobuf
 

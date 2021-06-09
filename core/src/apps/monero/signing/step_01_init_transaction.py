@@ -10,16 +10,14 @@ from apps.monero.signing.state import State
 from apps.monero.xmr import crypto, monero
 
 if False:
-    from trezor.messages.MoneroAccountPublicAddress import MoneroAccountPublicAddress
-    from trezor.messages.MoneroTransactionData import MoneroTransactionData
-    from trezor.messages.MoneroTransactionDestinationEntry import (
+    from apps.monero.xmr.types import Sc25519, Ge25519
+    from trezor.messages import (
+        MoneroAccountPublicAddress,
+        MoneroTransactionData,
         MoneroTransactionDestinationEntry,
+        MoneroTransactionInitAck,
+        MoneroTransactionRsigData,
     )
-    from trezor.messages.MoneroTransactionInitAck import MoneroTransactionInitAck
-    from trezor.messages.MoneroTransactionRsigData import MoneroTransactionRsigData
-    from typing import List
-
-    from apps.monero.xmr.types import Ge25519, Sc25519
 
 
 async def init_transaction(
@@ -29,8 +27,8 @@ async def init_transaction(
     tsx_data: MoneroTransactionData,
     keychain,
 ) -> MoneroTransactionInitAck:
-    from apps.common import paths
     from apps.monero.signing import offloading_keys
+    from apps.common import paths
 
     await paths.validate_path(state.ctx, keychain, address_n)
 
@@ -115,15 +113,17 @@ async def init_transaction(
 
     state.mem_trace(6)
 
-    from trezor.messages.MoneroTransactionInitAck import MoneroTransactionInitAck
-    from trezor.messages.MoneroTransactionRsigData import MoneroTransactionRsigData
+    from trezor.messages import (
+        MoneroTransactionInitAck,
+        MoneroTransactionRsigData,
+    )
 
-    rsig_data = MoneroTransactionRsigData(offload_type=state.rsig_offload)
+    rsig_data = MoneroTransactionRsigData(offload_type=int(state.rsig_offload))
 
     return MoneroTransactionInitAck(hmacs=hmacs, rsig_data=rsig_data)
 
 
-def _check_subaddresses(state: State, outputs: List[MoneroTransactionDestinationEntry]):
+def _check_subaddresses(state: State, outputs: list[MoneroTransactionDestinationEntry]):
     """
     Using subaddresses leads to a few poorly documented exceptions.
 
@@ -172,7 +172,7 @@ def _get_primary_change_address(state: State) -> MoneroAccountPublicAddress:
     """
     Computes primary change address for the current account index
     """
-    from trezor.messages.MoneroAccountPublicAddress import MoneroAccountPublicAddress
+    from trezor.messages import MoneroAccountPublicAddress
 
     D, C = monero.generate_sub_address_keys(
         state.creds.view_key_private, state.creds.spend_key_public, state.account_idx, 0
@@ -222,7 +222,7 @@ def _check_grouping(state: State):
         raise ValueError("Invalid grouping")
 
 
-def _check_change(state: State, outputs: List[MoneroTransactionDestinationEntry]):
+def _check_change(state: State, outputs: list[MoneroTransactionDestinationEntry]):
     """
     Check if the change address in state.output_change (from `tsx_data.outputs`) is
     a) among tx outputs
@@ -275,12 +275,11 @@ def _compute_sec_keys(state: State, tsx_data: MoneroTransactionData):
     """
     Generate master key H( H(TsxData || tx_priv) || rand )
     """
-    import protobuf
-
+    from trezor import protobuf
     from apps.monero.xmr.keccak_hasher import get_keccak_writer
 
     writer = get_keccak_writer()
-    protobuf.dump_message(writer, tsx_data)
+    writer.write(protobuf.dump_message_buffer(tsx_data))
     writer.write(crypto.encodeint(state.tx_priv))
 
     master_key = crypto.keccak_2hash(
@@ -290,7 +289,7 @@ def _compute_sec_keys(state: State, tsx_data: MoneroTransactionData):
     state.key_enc = crypto.keccak_2hash(b"enc" + master_key)
 
 
-def _precompute_subaddr(state: State, account: int, indices: List[int]):
+def _precompute_subaddr(state: State, account: int, indices: list[int]):
     """
     Precomputes subaddresses for account (major) and list of indices (minors)
     Subaddresses have to be stored in encoded form - unique representation.
@@ -365,9 +364,8 @@ def _get_key_for_payment_id_encryption(
     payment id encryption. If no encrypted payment ID is chosen,
     dummy payment ID is set for better transaction uniformity if possible.
     """
-    from trezor.messages.MoneroAccountPublicAddress import MoneroAccountPublicAddress
-
     from apps.monero.xmr.addresses import addr_eq
+    from trezor.messages import MoneroAccountPublicAddress
 
     addr = MoneroAccountPublicAddress(
         spend_public_key=crypto.NULL_KEY_ENC, view_public_key=crypto.NULL_KEY_ENC

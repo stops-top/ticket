@@ -9,17 +9,18 @@ from ..common import BIP32_WALLET_DEPTH, input_is_external
 from .matchcheck import MultisigFingerprintChecker, WalletPathChecker
 
 if False:
-    from trezor.messages.PrevInput import PrevInput
-    from trezor.messages.PrevOutput import PrevOutput
-    from trezor.messages.PrevTx import PrevTx
-    from trezor.messages.SignTx import SignTx
-    from trezor.messages.TxInput import TxInput
-    from trezor.messages.TxOutput import TxOutput
-    from typing import Optional, Protocol, Union
+    from typing import Protocol
+    from trezor.messages import (
+        PrevInput,
+        PrevOutput,
+        PrevTx,
+        SignTx,
+        TxInput,
+        TxOutput,
+    )
+    from .hash143 import Hash143
 
     from apps.common.coininfo import CoinInfo
-
-    from .hash143 import Hash143
 
     class Signer(Protocol):
         coin = ...  # type: CoinInfo
@@ -33,7 +34,7 @@ if False:
         def write_tx_header(
             self,
             w: writers.Writer,
-            tx: Union[SignTx, PrevTx],
+            tx: SignTx | PrevTx,
             witness_marker: bool,
         ) -> None:
             ...
@@ -41,7 +42,7 @@ if False:
         @staticmethod
         def write_tx_input(
             w: writers.Writer,
-            txi: Union[TxInput, PrevInput],
+            txi: TxInput | PrevInput,
             script: bytes,
         ) -> None:
             ...
@@ -49,7 +50,7 @@ if False:
         @staticmethod
         def write_tx_output(
             w: writers.Writer,
-            txo: Union[TxOutput, PrevOutput],
+            txo: TxOutput | PrevOutput,
             script_pubkey: bytes,
         ) -> None:
             ...
@@ -161,8 +162,8 @@ class OriginalTxInfo(TxInfoBase):
         writers.write_bitcoin_varint(self.h_tx, tx.inputs_count)
 
         # The input which will be used for verification and its index in the original transaction.
-        self.verification_input = None  # type: Optional[TxInput]
-        self.verification_index = None  # type: Optional[int]
+        self.verification_input: TxInput | None = None
+        self.verification_index: int | None = None
 
     def add_input(self, txi: TxInput) -> None:
         super().add_input(txi)

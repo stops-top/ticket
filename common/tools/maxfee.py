@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """Updates maxfee_kb in given JSON coin definitions."""
-import click
-import coin_info
 import glob
 import json
 import logging
-import marketcap
 import math
 import os.path
 import re
 import sys
+
+import click
+
+import coin_info
+import marketcap
 
 DEFAULT_SKIP_RE = (
     r"^Bitcoin$",

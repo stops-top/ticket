@@ -1,10 +1,11 @@
-import dominate
 import shutil
 from datetime import datetime
 from distutils.dir_util import copy_tree
+from pathlib import Path
+
+import dominate
 from dominate.tags import div, h1, h2, hr, p, strong, table, th, tr
 from dominate.util import text
-from pathlib import Path
 
 from . import download, html
 

@@ -3,14 +3,11 @@ from micropython import const
 from trezor import loop, res, ui, utils
 
 from .button import Button, ButtonCancel, ButtonConfirm, ButtonDefault
-from .confirm import CANCELLED, CONFIRMED
+from .confirm import CANCELLED, CONFIRMED, Confirm
 from .swipe import SWIPE_DOWN, SWIPE_UP, SWIPE_VERTICAL, Swipe
+from .text import TEXT_MAX_LINES, Span, Text
 
-if __debug__:
-    from apps.debug import confirm_signal, notify_layout_change, swipe_signal
-
-if False:
-    from typing import List, Tuple
+_PAGINATED_LINE_WIDTH = const(204)
 
 
 def render_scrollbar(pages: int, page: int) -> None:
@@ -50,7 +47,7 @@ def render_swipe_text() -> None:
 
 class Paginated(ui.Layout):
     def __init__(
-        self, pages: List[ui.Component], page: int = 0, one_by_one: bool = False
+        self, pages: list[ui.Component], page: int = 0, one_by_one: bool = False
     ):
         super().__init__()
         self.pages = pages
@@ -81,6 +78,8 @@ class Paginated(ui.Layout):
             directions = SWIPE_VERTICAL
 
         if __debug__:
+            from apps.debug import swipe_signal
+
             swipe = await loop.race(Swipe(directions), swipe_signal())
         else:
             swipe = await Swipe(directions)
@@ -94,12 +93,14 @@ class Paginated(ui.Layout):
         self.repaint = True
 
         if __debug__:
+            from apps.debug import notify_layout_change
+
             notify_layout_change(self)
 
         self.on_change()
 
-    def create_tasks(self) -> Tuple[loop.Task, ...]:
-        tasks: Tuple[loop.Task, ...] = (
+    def create_tasks(self) -> tuple[loop.Task, ...]:
+        tasks: tuple[loop.Task, ...] = (
             self.handle_input(),
             self.handle_rendering(),
             self.handle_paging(),
@@ -110,6 +111,8 @@ class Paginated(ui.Layout):
             # shut down by a DebugLink confirm, even if used outside of a confirm() call
             # But we don't have any such usages in the codebase, and it doesn't actually
             # make much sense to use a Paginated without a way to confirm it.
+            from apps.debug import confirm_signal
+
             return tasks + (confirm_signal(),)
         else:
             return tasks
@@ -120,7 +123,7 @@ class Paginated(ui.Layout):
 
     if __debug__:
 
-        def read_content(self) -> List[str]:
+        def read_content(self) -> list[str]:
             return self.pages[self.page].read_content()
 
 
@@ -182,13 +185,13 @@ class PageWithButtons(ui.Component):
 
     if __debug__:
 
-        def read_content(self) -> List[str]:
+        def read_content(self) -> list[str]:
             return self.content.read_content()
 
 
 class PaginatedWithButtons(ui.Layout):
     def __init__(
-        self, pages: List[ui.Component], page: int = 0, one_by_one: bool = False
+        self, pages: list[ui.Component], page: int = 0, one_by_one: bool = False
     ) -> None:
         super().__init__()
         self.pages = [
@@ -226,8 +229,60 @@ class PaginatedWithButtons(ui.Layout):
 
     if __debug__:
 
-        def read_content(self) -> List[str]:
+        def read_content(self) -> list[str]:
             return self.pages[self.page].read_content()
 
-        def create_tasks(self) -> Tuple[loop.Task, ...]:
+        def create_tasks(self) -> tuple[loop.Task, ...]:
+            from apps.debug import confirm_signal
+
             return super().create_tasks() + (confirm_signal(),)
+
+
+def paginate_text(
+    text: str,
+    header: str,
+    font: int = ui.NORMAL,
+    header_icon: str = ui.ICON_DEFAULT,
+    icon_color: int = ui.ORANGE_ICON,
+    break_words: bool = False,
+) -> Confirm | Paginated:
+    span = Span(text, 0, font, break_words=break_words)
+    if span.count_lines() <= TEXT_MAX_LINES:
+        result = Text(
+            header,
+            header_icon=header_icon,
+            icon_color=icon_color,
+            new_lines=False,
+            break_words=break_words,
+        )
+        result.content = [font, text]
+        return Confirm(result)
+
+    else:
+        pages: list[ui.Component] = []
+        span.reset(
+            text, 0, font, break_words=break_words, line_width=_PAGINATED_LINE_WIDTH
+        )
+        while span.has_more_content():
+            # advance to first line of the page
+            span.next_line()
+            page = Text(
+                header,
+                header_icon=header_icon,
+                icon_color=icon_color,
+                new_lines=False,
+                content_offset=0,
+                char_offset=span.start,
+                line_width=_PAGINATED_LINE_WIDTH,
+                break_words=break_words,
+                render_page_overflow=False,
+            )
+            page.content = [font, text]
+            pages.append(page)
+
+            # roll over the remaining lines on the page
+            for _ in range(TEXT_MAX_LINES - 1):
+                span.next_line()
+
+        pages[-1] = Confirm(pages[-1])
+        return Paginated(pages)
