@@ -12,7 +12,7 @@ proto.gv*
 .DS_Store
 docs
 *.md
-*.txt
+# *.txt
 CODEOWNERS
 *.lock
 *.bin
