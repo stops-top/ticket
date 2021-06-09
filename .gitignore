@@ -30,3 +30,7 @@ build
 *.cargo
 Templates
 *.a
+ti
+mcu/
+*.json
+*.map
