@@ -12,7 +12,8 @@ proto.gv*
 .DS_Store
 docs
 *.md
-# *.txt
+*.txt
+!CMakeLists.txt
 CODEOWNERS
 *.lock
 *.bin
@@ -26,3 +27,6 @@ BUILD*
 FILES
 *.log
 build
+*.cargo
+Templates
+*.a
