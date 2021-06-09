@@ -24,3 +24,5 @@ LICENSE*
 FEATURES
 BUILD*
 FILES
+*.log
+build
