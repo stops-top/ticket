@@ -15,7 +15,7 @@ docs
 *.txt
 !CMakeLists.txt
 CODEOWNERS
-*.lock
+# *.lock
 *.bin
 WORKSPACE
 COPYING*
