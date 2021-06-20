@@ -21,7 +21,7 @@ WORKSPACE
 COPYING*
 LICENSE*
 .github
-.gitmodules
+# .gitmodules
 FEATURES
 BUILD*
 FILES

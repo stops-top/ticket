@@ -1,6 +1,6 @@
 .PHONY: vendor
 
-JOBS = 4
+JOBS = 12
 MAKE = make -j $(JOBS)
 SCONS = scons -Q -j $(JOBS)
 
@@ -24,7 +24,7 @@ BITCOIN_ONLY ?= 0
 TREZOR_MODEL ?= T
 TREZOR_MEMPERF ?= 0
 
-OPENOCD_INTERFACE ?= stlink   # -or- ftdi/olimex-arm-usb-tiny-h
+OPENOCD_INTERFACE ?= stlink-v2   # -or- ftdi/olimex-arm-usb-tiny-h
 OPENOCD_TRANSPORT ?= hla_swd  # -or- jtag
 OPENOCD = openocd -f interface/$(OPENOCD_INTERFACE).cfg -c "transport select $(OPENOCD_TRANSPORT)" -f target/stm32f4x.cfg
 OPENOCD_T1 = openocd -f interface/$(OPENOCD_INTERFACE).cfg -c "transport select $(OPENOCD_TRANSPORT)" -f target/stm32f2x.cfg
